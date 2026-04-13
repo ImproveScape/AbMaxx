@@ -6,7 +6,7 @@ struct AnatomyScoreOverlayView: View {
     let obliquesScore: Int
     let vTaperScore: Int
 
-    @State private var appeared: Bool = false
+    @State private var opacity: Double = 0
 
     private static let imageURL = "https://r2-pub.rork.com/projects/ef37pg3laezo1t2hj7mt0/assets/9538eb95-b1ae-4581-b7cb-569bb4160e1c.png"
 
@@ -20,10 +20,10 @@ struct AnatomyScoreOverlayView: View {
                         let side = min(geo.size.width, geo.size.height)
                         ZStack {
                             Canvas { context, canvasSize in
-                                guard appeared else { return }
                                 drawAllZones(context: context, size: canvasSize)
                             }
                             .frame(width: side, height: side)
+                            .opacity(opacity)
 
                             image
                                 .resizable()
@@ -47,8 +47,12 @@ struct AnatomyScoreOverlayView: View {
         }
         .clipShape(.rect(cornerRadius: 14))
         .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) {
-                appeared = true
+            if opacity == 0 {
+                withAnimation(.easeOut(duration: 0.8)) {
+                    opacity = 1
+                }
+            } else {
+                opacity = 1
             }
         }
     }
