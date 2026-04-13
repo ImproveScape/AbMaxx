@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "AbMaxx",
+      "path": "ios",
+      "framework": "swift"
+    }
+  ]
+}
