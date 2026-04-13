@@ -27,7 +27,7 @@ class FoodSearchService {
 
         do {
             let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+                model: "anthropic/claude-sonnet-4.6",
                 messages: [["role": "user", "content": prompt]],
                 options: ["temperature": 0.3]
             )

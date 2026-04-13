@@ -29,7 +29,7 @@ class NutritionService {
 
         do {
             let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+                model: "anthropic/claude-sonnet-4.6",
                 messages: [["role": "user", "content": prompt]],
                 options: ["temperature": 0.3]
             )
@@ -75,7 +75,7 @@ class NutritionService {
         for attempt in 1...2 {
             do {
                 let response = try await RorkAI.shared.chat(
-                    model: "anthropic/claude-opus-4.5",
+                    model: "anthropic/claude-sonnet-4.6",
                     messages: messages,
                     options: ["temperature": 0.3, "max_tokens": 1024]
                 )
@@ -135,7 +135,7 @@ class NutritionService {
 
         do {
             let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+                model: "anthropic/claude-sonnet-4.6",
                 messages: [["role": "user", "content": prompt]],
                 options: ["temperature": 0.2]
             )
