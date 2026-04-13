@@ -17,6 +17,14 @@ nonisolated struct FoodSearchResult: Identifiable, Sendable {
 class FoodSearchService {
     static let shared = FoodSearchService()
 
+    private var baseURL: String {
+        let url = Config.EXPO_PUBLIC_TOOLKIT_URL
+        if url.isEmpty { return "https://toolkit.rork.com" }
+        return url
+    }
+
+    private var secretKey: String { Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY }
+
     func searchFood(_ query: String) async -> [FoodSearchResult] {
         let prompt = """
         You are a nutrition database. The user searched for: "\(query)"
@@ -26,17 +34,43 @@ class FoodSearchService {
         """
 
         do {
-            let text = try await AnthropicService.shared.chat(
-                systemPrompt: "",
-                messages: [["role": "user", "content": prompt]],
-                model: "claude-sonnet-4-20250514",
-                maxTokens: 1024,
-                temperature: 0.3
+            let text = try await chatCompletion(
+                messages: [["role": "user", "content": prompt]]
             )
             return parseResults(text)
         } catch {
             return []
         }
+    }
+
+    private func chatCompletion(messages: [[String: Any]]) async throws -> String {
+        guard let url = URL(string: "\(baseURL)/v2/vercel/v1/chat/completions") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(secretKey)", forHTTPHeaderField: "Authorization")
+        request.timeoutInterval = 120
+
+        let body: [String: Any] = [
+            "model": "anthropic/claude-sonnet-4.6",
+            "messages": messages,
+            "max_tokens": 1024,
+            "temperature": 0.3
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode < 400 else {
+            throw URLError(.badServerResponse)
+        }
+
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let choices = json?["choices"] as? [[String: Any]]
+        let message = choices?.first?["message"] as? [String: Any]
+        return message?["content"] as? String ?? ""
     }
 
     private func parseResults(_ text: String) -> [FoodSearchResult] {

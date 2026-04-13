@@ -9,13 +9,13 @@ nonisolated enum AnthropicError: LocalizedError, Sendable {
     var errorDescription: String? {
         switch self {
         case .noAPIKey:
-            return "Anthropic API key not configured"
+            return "API key not configured"
         case .httpError(let status, let body):
-            return "Anthropic API error \(status): \(body)"
+            return "API error \(status): \(body)"
         case .invalidResponse:
-            return "Invalid response from Anthropic API"
+            return "Invalid response from API"
         case .emptyResponse:
-            return "Empty response from Anthropic API"
+            return "Empty response from API"
         }
     }
 }
@@ -23,10 +23,13 @@ nonisolated enum AnthropicError: LocalizedError, Sendable {
 class AnthropicService {
     static let shared = AnthropicService()
 
-    private let apiURL = URL(string: "https://api.anthropic.com/v1/messages")!
-    private let anthropicVersion = "2023-06-01"
+    private var baseURL: String {
+        let url = Config.EXPO_PUBLIC_TOOLKIT_URL
+        if url.isEmpty { return "https://toolkit.rork.com" }
+        return url
+    }
 
-    private var apiKey: String { Config.EXPO_PUBLIC_ANTHROPIC_API_KEY }
+    private var secretKey: String { Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY }
 
     func chat(
         systemPrompt: String,
@@ -35,21 +38,26 @@ class AnthropicService {
         maxTokens: Int = 1024,
         temperature: Double = 0.7
     ) async throws -> String {
-        guard !apiKey.isEmpty else { throw AnthropicError.noAPIKey }
+        guard !secretKey.isEmpty else { throw AnthropicError.noAPIKey }
 
-        let anthropicMessages = messages.map { msg -> [String: Any] in
-            return [
+        let mappedModel = mapModel(model)
+
+        var openAIMessages: [[String: Any]] = []
+        if !systemPrompt.isEmpty {
+            openAIMessages.append(["role": "system", "content": systemPrompt])
+        }
+        for msg in messages {
+            openAIMessages.append([
                 "role": msg["role"] ?? "user",
                 "content": msg["content"] ?? ""
-            ]
+            ])
         }
 
         let body: [String: Any] = [
-            "model": model,
+            "model": mappedModel,
             "max_tokens": maxTokens,
             "temperature": temperature,
-            "system": systemPrompt,
-            "messages": anthropicMessages
+            "messages": openAIMessages
         ]
 
         let data = try await sendRequest(body: body)
@@ -64,44 +72,60 @@ class AnthropicService {
         maxTokens: Int = 1024,
         temperature: Double = 0.3
     ) async throws -> String {
-        guard !apiKey.isEmpty else { throw AnthropicError.noAPIKey }
+        guard !secretKey.isEmpty else { throw AnthropicError.noAPIKey }
 
-        let body: [String: Any] = [
-            "model": model,
-            "max_tokens": maxTokens,
-            "temperature": temperature,
-            "system": systemPrompt,
-            "messages": [
+        let mappedModel = mapModel(model)
+
+        var openAIMessages: [[String: Any]] = []
+        if !systemPrompt.isEmpty {
+            openAIMessages.append(["role": "system", "content": systemPrompt])
+        }
+        openAIMessages.append([
+            "role": "user",
+            "content": [
                 [
-                    "role": "user",
-                    "content": [
-                        [
-                            "type": "image",
-                            "source": [
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": imageBase64
-                            ]
-                        ],
-                        [
-                            "type": "text",
-                            "text": userText
-                        ]
-                    ]
+                    "type": "image_url",
+                    "image_url": ["url": "data:image/jpeg;base64,\(imageBase64)"]
+                ],
+                [
+                    "type": "text",
+                    "text": userText
                 ]
             ]
+        ])
+
+        let body: [String: Any] = [
+            "model": mappedModel,
+            "max_tokens": maxTokens,
+            "temperature": temperature,
+            "messages": openAIMessages
         ]
 
         let data = try await sendRequest(body: body)
         return try extractText(from: data)
     }
 
+    private func mapModel(_ model: String) -> String {
+        switch model {
+        case "claude-sonnet-4-20250514", "claude-3-5-sonnet-20241022":
+            return "anthropic/claude-sonnet-4.6"
+        case "claude-3-haiku-20240307", "claude-3-5-haiku-20241022":
+            return "anthropic/claude-haiku-4.5"
+        default:
+            if model.contains("/") { return model }
+            return "anthropic/claude-sonnet-4.6"
+        }
+    }
+
     private func sendRequest(body: [String: Any]) async throws -> Data {
-        var request = URLRequest(url: apiURL)
+        guard let url = URL(string: "\(baseURL)/v2/vercel/v1/chat/completions") else {
+            throw AnthropicError.invalidResponse
+        }
+
+        var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
+        request.setValue("Bearer \(secretKey)", forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 120
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
@@ -122,18 +146,26 @@ class AnthropicService {
 
     private func extractText(from data: Data) throws -> String {
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let content = json["content"] as? [[String: Any]],
-              let firstBlock = content.first,
-              let text = firstBlock["text"] as? String else {
+              let choices = json["choices"] as? [[String: Any]],
+              let message = choices.first?["message"] as? [String: Any] else {
             let raw = String(data: data, encoding: .utf8) ?? "empty"
             print("[AnthropicService] Could not parse response: \(raw.prefix(500))")
             throw AnthropicError.invalidResponse
         }
 
-        guard !text.isEmpty else {
-            throw AnthropicError.emptyResponse
+        if let text = message["content"] as? String, !text.isEmpty {
+            return text
         }
 
-        return text
+        if let contentArray = message["content"] as? [[String: Any]] {
+            for part in contentArray {
+                if let type = part["type"] as? String, type == "text",
+                   let text = part["text"] as? String, !text.isEmpty {
+                    return text
+                }
+            }
+        }
+
+        throw AnthropicError.emptyResponse
     }
 }
