@@ -38,7 +38,7 @@ class FoodScanService {
         for attempt in 1...2 {
             do {
                 let response = try await RorkAI.shared.chat(
-                    model: "anthropic/claude-sonnet-4.6",
+                    model: "anthropic/claude-opus-4.5",
                     messages: messages,
                     options: ["temperature": 0.3, "max_tokens": 1024]
                 )

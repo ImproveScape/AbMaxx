@@ -27,7 +27,7 @@ class CoachVerdictService {
         }
 
         let response = try await RorkAI.shared.chat(
-            model: "anthropic/claude-sonnet-4.6",
+            model: "anthropic/claude-sonnet-4-20250514",
             messages: apiMessages,
             options: ["temperature": 0.7, "max_tokens": 512],
             timeout: 90

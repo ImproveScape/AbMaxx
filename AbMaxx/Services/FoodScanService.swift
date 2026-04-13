@@ -15,14 +15,6 @@ nonisolated struct FoodScanResponse: Codable, Sendable {
 class FoodScanService {
     static let shared = FoodScanService()
 
-    private var baseURL: String {
-        let url = Config.EXPO_PUBLIC_TOOLKIT_URL
-        if url.isEmpty { return "https://toolkit.rork.com" }
-        return url
-    }
-
-    private var secretKey: String { Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY }
-
     func analyzeFoodImage(_ image: UIImage) async -> FoodScanResponse? {
         guard let base64 = imageToBase64(image) else { return nil }
 
@@ -35,49 +27,18 @@ class FoodScanService {
         """
 
         do {
-            let text = try await chatCompletion(
-                messages: [
-                    ["role": "system", "content": systemPrompt],
-                    ["role": "user", "content": [
-                        ["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\(base64)"]],
-                        ["type": "text", "text": "Analyze this food and estimate the nutritional content. Return only JSON."]
-                    ]]
-                ]
+            let text = try await AnthropicService.shared.chatWithVision(
+                systemPrompt: systemPrompt,
+                userText: "Analyze this food and estimate the nutritional content. Return only JSON.",
+                imageBase64: base64,
+                model: "claude-sonnet-4-20250514",
+                maxTokens: 1024,
+                temperature: 0.3
             )
             return parseResponse(text)
         } catch {
             return nil
         }
-    }
-
-    private func chatCompletion(messages: [[String: Any]]) async throws -> String {
-        guard let url = URL(string: "\(baseURL)/v2/vercel/v1/chat/completions") else {
-            throw URLError(.badURL)
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(secretKey)", forHTTPHeaderField: "Authorization")
-        request.timeoutInterval = 120
-
-        let body: [String: Any] = [
-            "model": "anthropic/claude-sonnet-4.6",
-            "messages": messages,
-            "max_tokens": 1024,
-            "temperature": 0.3
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, http.statusCode < 400 else {
-            throw URLError(.badServerResponse)
-        }
-
-        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        let choices = json?["choices"] as? [[String: Any]]
-        let message = choices?.first?["message"] as? [String: Any]
-        return message?["content"] as? String ?? ""
     }
 
     private func parseResponse(_ text: String) -> FoodScanResponse? {

@@ -15,41 +15,6 @@ class NutritionService {
 
     private var secretKey: String { Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY }
 
-    private func chatCompletion(messages: [[String: Any]], model: String = "anthropic/claude-sonnet-4.6", maxTokens: Int = 2048, temperature: Double = 0.3) async throws -> String {
-        guard let url = URL(string: "\(baseURL)/v2/vercel/v1/chat/completions") else {
-            throw URLError(.badURL)
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(secretKey)", forHTTPHeaderField: "Authorization")
-        request.timeoutInterval = 120
-
-        let body: [String: Any] = [
-            "model": model,
-            "messages": messages,
-            "max_tokens": maxTokens,
-            "temperature": temperature
-        ]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let http = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-
-        if http.statusCode >= 400 {
-            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
-            print("[NutritionService] API error \(http.statusCode): \(errorBody)")
-            throw URLError(.badServerResponse)
-        }
-
-        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-        return extractContentText(from: json ?? [:])
-    }
-
     func searchFood(_ query: String) async {
         searchResults = []
         errorMessage = nil
@@ -62,10 +27,13 @@ class NutritionService {
         """
 
         do {
-            let messages: [[String: Any]] = [
-                ["role": "user", "content": prompt]
-            ]
-            let text = try await chatCompletion(messages: messages)
+            let text = try await AnthropicService.shared.chat(
+                systemPrompt: "",
+                messages: [["role": "user", "content": prompt]],
+                model: "claude-sonnet-4-20250514",
+                maxTokens: 2048,
+                temperature: 0.3
+            )
             searchResults = parseSearchResults(text)
             if searchResults.isEmpty {
                 errorMessage = "No results found. Try a different search."
@@ -91,14 +59,14 @@ class NutritionService {
         """
 
         do {
-            let messages: [[String: Any]] = [
-                ["role": "system", "content": systemPrompt],
-                ["role": "user", "content": [
-                    ["type": "image_url", "image_url": ["url": "data:image/jpeg;base64,\(base64)"]],
-                    ["type": "text", "text": "Analyze this food and estimate nutrition. Return only JSON array."]
-                ]]
-            ]
-            let text = try await chatCompletion(messages: messages)
+            let text = try await AnthropicService.shared.chatWithVision(
+                systemPrompt: systemPrompt,
+                userText: "Analyze this food and estimate nutrition. Return only JSON array.",
+                imageBase64: base64,
+                model: "claude-sonnet-4-20250514",
+                maxTokens: 1024,
+                temperature: 0.3
+            )
             let results = parseSearchResults(text)
             if results.isEmpty {
                 errorMessage = "Could not identify food items."
@@ -139,10 +107,13 @@ class NutritionService {
         """
 
         do {
-            let messages: [[String: Any]] = [
-                ["role": "user", "content": prompt]
-            ]
-            let text = try await chatCompletion(messages: messages, maxTokens: 1024, temperature: 0.2)
+            let text = try await AnthropicService.shared.chat(
+                systemPrompt: "",
+                messages: [["role": "user", "content": prompt]],
+                model: "claude-sonnet-4-20250514",
+                maxTokens: 1024,
+                temperature: 0.2
+            )
             return parseEnrichedData(text)
         } catch {
             return nil
@@ -208,6 +179,7 @@ class NutritionService {
             manganese: d("manganese"), selenium: d("selenium"), copper: d("copper")
         )
     }
+
 
     private func extractContentText(from response: [String: Any]) -> String {
         let choices = response["choices"] as? [[String: Any]]
