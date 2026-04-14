@@ -57,7 +57,7 @@ actor RorkAI {
             "messages": messages,
         ]
         for (key, value) in options { body[key] = value }
-        let data = try await request("/v2/vercel/chat/completions", body: body, timeout: timeout)
+        let data = try await request("/v2/vercel/v1/chat/completions", body: body, timeout: timeout)
         return try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
     }
 
@@ -70,7 +70,7 @@ actor RorkAI {
             "response_format": "b64_json",
         ]
         for (key, value) in options { body[key] = value }
-        let data = try await request("/v2/vercel/images/generations", body: body)
+        let data = try await request("/v2/vercel/v1/images/generations", body: body)
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let items = json?["data"] as? [[String: Any]]
         return items?.first?["b64_json"] as? String ?? ""
@@ -82,7 +82,7 @@ actor RorkAI {
             "input": input,
         ]
         for (key, value) in options { body[key] = value }
-        let data = try await request("/v2/vercel/embeddings", body: body)
+        let data = try await request("/v2/vercel/v1/embeddings", body: body)
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let items = json?["data"] as? [[String: Any]]
         return items?.first?["embedding"] as? [Double] ?? []

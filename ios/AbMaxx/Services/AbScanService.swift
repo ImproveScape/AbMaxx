@@ -357,7 +357,7 @@ Return ONLY this exact JSON with no other text:
 
         do {
             let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+                model: "anthropic/claude-sonnet-4.6",
                 messages: messages,
                 options: ["max_tokens": 2048],
                 timeout: 120
