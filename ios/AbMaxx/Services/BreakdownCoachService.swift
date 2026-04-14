@@ -115,7 +115,7 @@ class BreakdownCoachService {
     private func sendChat(messages: [[String: String]]) async throws -> String {
         let apiMessages: [[String: Any]] = messages.map { $0 as [String: Any] }
         let response = try await RorkAI.shared.chat(
-            model: "anthropic/claude-sonnet-4.6",
+            model: "anthropic/claude-opus-4.5",
             messages: apiMessages,
             options: ["temperature": 0.7, "max_tokens": 1024]
         )
