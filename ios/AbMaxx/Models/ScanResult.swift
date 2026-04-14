@@ -122,27 +122,13 @@ nonisolated struct ScanResult: Codable, Identifiable, Sendable {
         let structure = parseAbsStructure(analysis.abs_structure)
         let (gpLevel, _) = parseGeneticPotential(analysis.genetic_potential)
 
-        let bf = analysis.body_fat_estimate
-        let bfMultiplier: Double
-        switch bf {
-        case ..<8:    bfMultiplier = 1.05
-        case 8..<10:  bfMultiplier = 1.02
-        case 10..<12: bfMultiplier = 1.00
-        case 12..<14: bfMultiplier = 0.97
-        case 14..<16: bfMultiplier = 0.94
-        case 16..<18: bfMultiplier = 0.90
-        case 18..<20: bfMultiplier = 0.86
-        case 20..<23: bfMultiplier = 0.82
-        default:      bfMultiplier = 0.76
-        }
         let weighted = (Double(def) * 0.25) +
                        (Double(thk) * 0.25) +
                        (Double(obl) * 0.20) +
                        (Double(aes) * 0.15) +
                        (Double(sym) * 0.10) +
                        (Double(frm) * 0.05)
-        let adjusted = weighted * bfMultiplier
-        let overall = max(45, min(100, Int(adjusted.rounded())))
+        let overall = max(45, min(100, Int(weighted.rounded())))
 
         let motivatingFloor = overall + max(3, Int(Double(100 - overall) * 0.65))
         let gpScore = analysis.genetic_potential_score > 0 ? analysis.genetic_potential_score : motivatingFloor
