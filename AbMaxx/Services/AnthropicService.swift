@@ -23,19 +23,10 @@ nonisolated enum AnthropicError: LocalizedError, Sendable {
 class AnthropicService {
     static let shared = AnthropicService()
 
-    private func prefixedModel(_ model: String) -> String {
-        if model.contains("/") { return model }
-        return "anthropic/\(model)"
-    }
+    private let apiURL = URL(string: "https://api.anthropic.com/v1/messages")!
+    private let anthropicVersion = "2023-06-01"
 
-    private func extractText(from response: [String: Any]) throws -> String {
-        if let choices = response["choices"] as? [[String: Any]],
-           let message = choices.first?["message"] as? [String: Any],
-           let text = message["content"] as? String, !text.isEmpty {
-            return text
-        }
-        throw AnthropicError.invalidResponse
-    }
+    private var apiKey: String { Config.EXPO_PUBLIC_ANTHROPIC_API_KEY }
 
     func chat(
         systemPrompt: String,
@@ -44,29 +35,25 @@ class AnthropicService {
         maxTokens: Int = 1024,
         temperature: Double = 0.7
     ) async throws -> String {
-        var apiMessages: [[String: Any]] = []
+        guard !apiKey.isEmpty else { throw AnthropicError.noAPIKey }
 
-        if !systemPrompt.isEmpty {
-            apiMessages.append(["role": "system", "content": systemPrompt])
-        }
-
-        for msg in messages {
-            apiMessages.append([
+        let anthropicMessages = messages.map { msg -> [String: Any] in
+            return [
                 "role": msg["role"] ?? "user",
                 "content": msg["content"] ?? ""
-            ])
+            ]
         }
 
-        let response = try await RorkAI.shared.chat(
-            model: prefixedModel(model),
-            messages: apiMessages,
-            options: ["max_tokens": maxTokens, "temperature": temperature],
-            timeout: 120
-        )
+        let body: [String: Any] = [
+            "model": model,
+            "max_tokens": maxTokens,
+            "temperature": temperature,
+            "system": systemPrompt,
+            "messages": anthropicMessages
+        ]
 
-        let text = try extractText(from: response)
-        guard !text.isEmpty else { throw AnthropicError.emptyResponse }
-        return text
+        let data = try await sendRequest(body: body)
+        return try extractText(from: data)
     }
 
     func chatWithVision(
@@ -77,35 +64,76 @@ class AnthropicService {
         maxTokens: Int = 1024,
         temperature: Double = 0.3
     ) async throws -> String {
-        var apiMessages: [[String: Any]] = []
+        guard !apiKey.isEmpty else { throw AnthropicError.noAPIKey }
 
-        if !systemPrompt.isEmpty {
-            apiMessages.append(["role": "system", "content": systemPrompt])
-        }
-
-        apiMessages.append([
-            "role": "user",
-            "content": [
+        let body: [String: Any] = [
+            "model": model,
+            "max_tokens": maxTokens,
+            "temperature": temperature,
+            "system": systemPrompt,
+            "messages": [
                 [
-                    "type": "image_url",
-                    "image_url": ["url": "data:image/jpeg;base64,\(imageBase64)"]
-                ],
-                [
-                    "type": "text",
-                    "text": userText
+                    "role": "user",
+                    "content": [
+                        [
+                            "type": "image",
+                            "source": [
+                                "type": "base64",
+                                "media_type": "image/jpeg",
+                                "data": imageBase64
+                            ]
+                        ],
+                        [
+                            "type": "text",
+                            "text": userText
+                        ]
+                    ]
                 ]
             ]
-        ])
+        ]
 
-        let response = try await RorkAI.shared.chat(
-            model: prefixedModel(model),
-            messages: apiMessages,
-            options: ["max_tokens": maxTokens, "temperature": temperature],
-            timeout: 120
-        )
+        let data = try await sendRequest(body: body)
+        return try extractText(from: data)
+    }
 
-        let text = try extractText(from: response)
-        guard !text.isEmpty else { throw AnthropicError.emptyResponse }
+    private func sendRequest(body: [String: Any]) async throws -> Data {
+        var request = URLRequest(url: apiURL)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
+        request.setValue(anthropicVersion, forHTTPHeaderField: "anthropic-version")
+        request.timeoutInterval = 120
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let http = response as? HTTPURLResponse else {
+            throw AnthropicError.invalidResponse
+        }
+
+        if http.statusCode >= 400 {
+            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            print("[AnthropicService] API error \(http.statusCode): \(errorBody)")
+            throw AnthropicError.httpError(status: http.statusCode, body: errorBody)
+        }
+
+        return data
+    }
+
+    private func extractText(from data: Data) throws -> String {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let content = json["content"] as? [[String: Any]],
+              let firstBlock = content.first,
+              let text = firstBlock["text"] as? String else {
+            let raw = String(data: data, encoding: .utf8) ?? "empty"
+            print("[AnthropicService] Could not parse response: \(raw.prefix(500))")
+            throw AnthropicError.invalidResponse
+        }
+
+        guard !text.isEmpty else {
+            throw AnthropicError.emptyResponse
+        }
+
         return text
     }
 }

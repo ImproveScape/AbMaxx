@@ -15,27 +15,17 @@ nonisolated enum RorkAPIError: LocalizedError, Sendable {
 }
 
 actor RorkAI {
-    @MainActor static let shared = RorkAI()
+    static let shared = RorkAI()
 
-    private let _baseURL: URL
-    private let _secretKey: String
+    private var baseURL: URL { MainActor.assumeIsolated { URL(string: Config.EXPO_PUBLIC_TOOLKIT_URL)! } }
+    private var secretKey: String { MainActor.assumeIsolated { Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY } }
 
-    private var baseURL: URL { _baseURL }
-    private var secretKey: String { _secretKey }
-
-    @MainActor
-    init() {
-        _baseURL = URL(string: Config.EXPO_PUBLIC_TOOLKIT_URL) ?? URL(string: "https://placeholder")!
-        _secretKey = Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY
-    }
-
-    private func request(_ path: String, body: [String: Any], timeout: TimeInterval = 60) async throws -> Data {
+    private func request(_ path: String, body: [String: Any]) async throws -> Data {
         let url = baseURL.appendingPathComponent(path)
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.setValue("Bearer \(secretKey)", forHTTPHeaderField: "Authorization")
-        req.timeoutInterval = timeout
         req.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await URLSession.shared.data(for: req)
@@ -51,13 +41,13 @@ actor RorkAI {
         return data
     }
 
-    func chat(model: String, messages: [[String: Any]], options: [String: Any] = [:], timeout: TimeInterval = 60) async throws -> [String: Any] {
+    func chat(model: String, messages: [[String: Any]], options: [String: Any] = [:]) async throws -> [String: Any] {
         var body: [String: Any] = [
             "model": model,
             "messages": messages,
         ]
         for (key, value) in options { body[key] = value }
-        let data = try await request("/v2/vercel/v1/chat/completions", body: body, timeout: timeout)
+        let data = try await request("/v2/vercel/chat/completions", body: body)
         return try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
     }
 
