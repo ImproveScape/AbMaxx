@@ -223,13 +223,14 @@ class OnboardingViewModel {
 
         let savedFileName = pendingSaveFileName
         let base64 = preparedBase64
+        let apiKey = Config.EXPO_PUBLIC_ANTHROPIC_API_KEY
         preparedBase64 = nil
 
         Task {
             let outcome: AnalysisOutcome
 
-            if let base64 {
-                let networkResult = await AbScanService.runAnalysisNetwork(base64: base64)
+            if let base64, !apiKey.isEmpty {
+                let networkResult = await AbScanService.runAnalysisNetwork(base64: base64, apiKey: apiKey)
 
                 switch networkResult {
                 case .success(let aiResult):

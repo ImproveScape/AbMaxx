@@ -298,7 +298,7 @@ Return ONLY this exact JSON with no other text:
         }
     }
 
-    nonisolated static func runAnalysisNetwork(base64: String) async -> Result<AbAnalysisResponse, ScanError> {
+    nonisolated static func runAnalysisNetwork(base64: String, apiKey: String) async -> Result<AbAnalysisResponse, ScanError> {
         await MainActor.run { AbScanService.shared }.callRorkAIProxy(base64: base64, profile: nil)
     }
 
