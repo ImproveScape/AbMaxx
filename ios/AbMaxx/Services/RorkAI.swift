@@ -19,14 +19,17 @@ actor RorkAI {
 
     private let _baseURL: URL
     private let _secretKey: String
+    private let _anthropicAPIKey: String
 
     private var baseURL: URL { _baseURL }
     private var secretKey: String { _secretKey }
+    private var anthropicAPIKey: String { _anthropicAPIKey }
 
     @MainActor
     init() {
         _baseURL = URL(string: Config.EXPO_PUBLIC_TOOLKIT_URL) ?? URL(string: "https://placeholder")!
         _secretKey = Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY
+        _anthropicAPIKey = Config.EXPO_PUBLIC_ANTHROPIC_API_KEY
     }
 
     private func request(_ path: String, body: [String: Any], timeout: TimeInterval = 60) async throws -> Data {
@@ -51,12 +54,34 @@ actor RorkAI {
         return data
     }
 
+    private func providerOptions(for model: String, existing: [String: Any]?) -> [String: Any]? {
+        guard model.hasPrefix("anthropic/"), !anthropicAPIKey.isEmpty else {
+            return existing
+        }
+
+        var providerOptions: [String: Any] = existing ?? [:]
+        var gatewayOptions: [String: Any] = providerOptions["gateway"] as? [String: Any] ?? [:]
+        var byokOptions: [String: Any] = gatewayOptions["byok"] as? [String: Any] ?? [:]
+
+        byokOptions["anthropic"] = [["apiKey": anthropicAPIKey]]
+        gatewayOptions["byok"] = byokOptions
+        gatewayOptions["only"] = ["anthropic"]
+        providerOptions["gateway"] = gatewayOptions
+
+        return providerOptions
+    }
+
     func chat(model: String, messages: [[String: Any]], options: [String: Any] = [:], timeout: TimeInterval = 60) async throws -> [String: Any] {
         var body: [String: Any] = [
             "model": model,
             "messages": messages,
         ]
-        for (key, value) in options { body[key] = value }
+        for (key, value) in options where key != "providerOptions" {
+            body[key] = value
+        }
+        if let providerOptions = providerOptions(for: model, existing: options["providerOptions"] as? [String: Any]) {
+            body["providerOptions"] = providerOptions
+        }
         let data = try await request("/v2/vercel/chat/completions", body: body, timeout: timeout)
         return try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
     }
