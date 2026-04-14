@@ -7,13 +7,7 @@ class NutritionService {
     var searchResults: [NutritionLookupResult] = []
     var errorMessage: String?
 
-    private var baseURL: String {
-        let url = Config.EXPO_PUBLIC_TOOLKIT_URL
-        if url.isEmpty { return "https://toolkit.rork.com" }
-        return url
-    }
 
-    private var secretKey: String { Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY }
 
     func searchFood(_ query: String) async {
         searchResults = []
@@ -28,14 +22,11 @@ class NutritionService {
         """
 
         do {
-            let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+            let text = try await OpenAIService.shared.chat(
+                model: "gpt-4o",
                 messages: [["role": "user", "content": prompt]],
-                options: ["temperature": 0.3]
+                temperature: 0.3
             )
-
-            let choices = response["choices"] as? [[String: Any]]
-            let text = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
             searchResults = parseSearchResults(text)
             if searchResults.isEmpty {
                 errorMessage = "No results found. Try a different search."
@@ -74,14 +65,12 @@ class NutritionService {
 
         for attempt in 1...2 {
             do {
-                let response = try await RorkAI.shared.chat(
-                    model: "anthropic/claude-opus-4.5",
+                let text = try await OpenAIService.shared.chat(
+                    model: "gpt-4o",
                     messages: messages,
-                    options: ["temperature": 0.3, "max_tokens": 1024]
+                    temperature: 0.3,
+                    maxTokens: 1024
                 )
-
-                let choices = response["choices"] as? [[String: Any]]
-                let text = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
                 if isNoFoodResponse(text) {
                     errorMessage = "No food or drinks detected. Try a photo of your meal."
                     return []
@@ -134,14 +123,11 @@ class NutritionService {
         """
 
         do {
-            let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+            let text = try await OpenAIService.shared.chat(
+                model: "gpt-4o",
                 messages: [["role": "user", "content": prompt]],
-                options: ["temperature": 0.2]
+                temperature: 0.2
             )
-
-            let choices = response["choices"] as? [[String: Any]]
-            let text = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
             return parseEnrichedData(text)
         } catch {
             return nil

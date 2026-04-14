@@ -108,7 +108,7 @@ class VoiceLogService: NSObject {
 
         do {
             let audioData = try Data(contentsOf: url)
-            let text = try await RorkAI.shared.transcribe(audioData: audioData, filename: "voice_log.m4a")
+            let text = try await OpenAIService.shared.transcribe(audioData: audioData, filename: "voice_log.m4a")
             transcribedText = text
 
             if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -163,14 +163,11 @@ class VoiceLogService: NSObject {
         """
 
         do {
-            let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+            let responseText = try await OpenAIService.shared.chat(
+                model: "gpt-4o",
                 messages: [["role": "user", "content": prompt]],
-                options: ["temperature": 0.3]
+                temperature: 0.3
             )
-
-            let choices = response["choices"] as? [[String: Any]]
-            let responseText = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
             nutritionResults = parseResults(responseText)
             if nutritionResults.isEmpty {
                 errorMessage = "Could not identify food items."

@@ -57,41 +57,15 @@ Return ONLY this JSON, no other text:
     func analyzeForHeatMap(_ image: UIImage) async -> HeatMapAnalysis? {
         guard let base64 = imageToBase64(image) else { return nil }
 
-        let messages: [[String: Any]] = [
-            [
-                "role": "system",
-                "content": systemPrompt
-            ],
-            [
-                "role": "user",
-                "content": [
-                    [
-                        "type": "image_url",
-                        "image_url": [
-                            "url": "data:image/jpeg;base64,\(base64)"
-                        ]
-                    ],
-                    [
-                        "type": "text",
-                        "text": "Analyze this physique photo. Map each abdominal zone with precise coordinates relative to the image. Score definition intensity for each zone. Be precise with coordinates \u{2014} they will be used to render a heat map overlay directly on this image. Return only JSON."
-                    ]
-                ] as [[String: Any]]
-            ]
-        ]
-
         do {
-            let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
-                messages: messages,
-                options: ["max_tokens": 2000, "temperature": 0.3]
+            let content = try await AnthropicService.shared.chatWithVision(
+                systemPrompt: systemPrompt,
+                userText: "Analyze this physique photo. Map each abdominal zone with precise coordinates relative to the image. Score definition intensity for each zone. Be precise with coordinates \u{2014} they will be used to render a heat map overlay directly on this image. Return only JSON.",
+                imageBase64: base64,
+                model: "claude-sonnet-4-20250514",
+                maxTokens: 2000,
+                temperature: 0.3
             )
-
-            guard let choices = response["choices"] as? [[String: Any]],
-                  let message = choices.first?["message"] as? [String: Any],
-                  let content = message["content"] as? String else {
-                print("[HeatMap] No content in response")
-                return nil
-            }
 
             return parseResponse(content)
         } catch {
@@ -193,7 +167,7 @@ Make it look like a high-tech body composition scan / thermal imaging analysis. 
 """
 
         do {
-            let base64Result = try await RorkAI.shared.editImage(
+            let base64Result = try await OpenAIService.shared.editImage(
                 imageData: pngData,
                 prompt: prompt,
                 size: "1024x1536"

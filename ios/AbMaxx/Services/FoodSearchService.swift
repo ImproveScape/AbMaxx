@@ -26,14 +26,11 @@ class FoodSearchService {
         """
 
         do {
-            let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
+            let text = try await OpenAIService.shared.chat(
+                model: "gpt-4o",
                 messages: [["role": "user", "content": prompt]],
-                options: ["temperature": 0.3]
+                temperature: 0.3
             )
-
-            let choices = response["choices"] as? [[String: Any]]
-            let text = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
             return parseResults(text)
         } catch {
             return []

@@ -254,7 +254,7 @@ Return ONLY this exact JSON with no other text:
     }
 
     func analyzePhoto(_ image: UIImage, profile: UserProfile) async -> AbAnalysisResponse? {
-        print("[AbScan] Function called - starting scan via Rork AI proxy")
+        print("[AbScan] Function called - starting scan via Anthropic API")
         print("[AbScan] Image size: \(image.size), scale: \(image.scale)")
         lastScanError = nil
 
@@ -335,47 +335,15 @@ Return ONLY this exact JSON with no other text:
     private func callRorkAIProxy(base64: String, profile: UserProfile?) async -> Result<AbAnalysisResponse, ScanError> {
         let promptText = profile != nil ? buildUserPrompt(profile: profile!) : userPromptTemplate
 
-        let messages: [[String: Any]] = [
-            [
-                "role": "system",
-                "content": systemPrompt
-            ],
-            [
-                "role": "user",
-                "content": [
-                    [
-                        "type": "image_url",
-                        "image_url": ["url": "data:image/jpeg;base64,\(base64)"]
-                    ],
-                    [
-                        "type": "text",
-                        "text": promptText
-                    ]
-                ]
-            ]
-        ]
-
         do {
-            let response = try await RorkAI.shared.chat(
-                model: "anthropic/claude-opus-4.5",
-                messages: messages,
-                options: ["max_tokens": 2048],
-                timeout: 120
+            let text = try await AnthropicService.shared.chatWithVision(
+                systemPrompt: systemPrompt,
+                userText: promptText,
+                imageBase64: base64,
+                model: "claude-sonnet-4-20250514",
+                maxTokens: 2048,
+                temperature: 0.2
             )
-
-            if let errorInfo = response["error"] as? [String: Any] {
-                let errorMsg = (errorInfo["message"] as? String) ?? "Unknown API error"
-                print("[AbScan] API returned error: \(errorMsg)")
-                return .failure(.apiError(errorMsg))
-            }
-
-            guard let choices = response["choices"] as? [[String: Any]],
-                  let firstChoice = choices.first,
-                  let message = firstChoice["message"] as? [String: Any],
-                  let text = message["content"] as? String else {
-                print("[AbScan] Error: No text content in response. Full response keys: \(response.keys)")
-                return .failure(.apiError("No response from AI"))
-            }
 
             print("[AbScan] Parsed text content: \(text.prefix(200))")
 
@@ -388,8 +356,8 @@ Return ONLY this exact JSON with no other text:
             }
 
             return .success(result)
-        } catch let error as RorkAPIError {
-            print("[AbScan] RorkAI error: \(error)")
+        } catch let error as AnthropicError {
+            print("[AbScan] Anthropic error: \(error)")
             return .failure(.apiError(error.localizedDescription))
         } catch let error as URLError where error.code == .timedOut {
             print("[AbScan] Timeout error")

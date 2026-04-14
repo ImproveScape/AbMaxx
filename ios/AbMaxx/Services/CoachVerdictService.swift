@@ -26,14 +26,12 @@ class CoachVerdictService {
             apiMessages.append(["role": msg.isUser ? "user" : "assistant", "content": msg.text])
         }
 
-        let response = try await RorkAI.shared.chat(
-            model: "anthropic/claude-opus-4.5",
+        let text = try await OpenAIService.shared.chat(
+            model: "gpt-4o",
             messages: apiMessages,
-            options: ["temperature": 0.7, "max_tokens": 512]
+            temperature: 0.7,
+            maxTokens: 512
         )
-
-        let choices = response["choices"] as? [[String: Any]]
-        let text = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
 
         if text.isEmpty {
             throw CoachError.emptyResponse

@@ -113,15 +113,30 @@ class BreakdownCoachService {
     }
 
     private func sendChat(messages: [[String: String]]) async throws -> String {
-        let apiMessages: [[String: Any]] = messages.map { $0 as [String: Any] }
-        let response = try await RorkAI.shared.chat(
-            model: "anthropic/claude-opus-4.5",
-            messages: apiMessages,
-            options: ["temperature": 0.7, "max_tokens": 1024]
-        )
+        var systemPrompt = ""
+        var apiMessages: [[String: Any]] = []
 
-        let choices = response["choices"] as? [[String: Any]]
-        let text = (choices?.first?["message"] as? [String: Any])?["content"] as? String ?? ""
+        for msg in messages {
+            if msg["role"] == "system" {
+                systemPrompt = msg["content"] ?? ""
+            } else {
+                apiMessages.append(msg as [String: Any])
+            }
+        }
+
+        let allMessages: [[String: Any]]
+        if !systemPrompt.isEmpty {
+            allMessages = [["role": "system", "content": systemPrompt]] + apiMessages
+        } else {
+            allMessages = apiMessages
+        }
+
+        let text = try await OpenAIService.shared.chat(
+            model: "gpt-4o",
+            messages: allMessages,
+            temperature: 0.7,
+            maxTokens: 1024
+        )
 
         if text.isEmpty {
             throw CoachError.emptyResponse
