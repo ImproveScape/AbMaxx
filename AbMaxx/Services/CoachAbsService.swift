@@ -11,24 +11,20 @@ class CoachAbsService {
         Use the user's scan data to personalize advice. Here is their current data:\n\(scanContext)
         """
 
-        var apiMessages: [[String: Any]] = [
-            ["role": "system", "content": systemPrompt]
-        ]
+        var apiMessages: [[String: String]] = []
         for msg in messages {
             apiMessages.append(["role": msg.isUser ? "user" : "assistant", "content": msg.text])
         }
 
-        let result = try await RorkAI.shared.chat(
-            model: "anthropic/claude-sonnet-4-20250514",
+        let text = try await AnthropicService.shared.chat(
+            systemPrompt: systemPrompt,
             messages: apiMessages,
-            options: ["max_tokens": 512, "temperature": 0.7]
+            model: "claude-sonnet-4-20250514",
+            maxTokens: 512,
+            temperature: 0.7
         )
 
-        guard let choices = result["choices"] as? [[String: Any]],
-              let first = choices.first,
-              let message = first["message"] as? [String: Any],
-              let text = message["content"] as? String,
-              !text.isEmpty else {
+        if text.isEmpty {
             throw CoachError.emptyResponse
         }
 

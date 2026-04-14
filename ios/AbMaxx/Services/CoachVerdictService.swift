@@ -27,10 +27,9 @@ class CoachVerdictService {
         }
 
         let response = try await RorkAI.shared.chat(
-            model: "anthropic/claude-sonnet-4.6",
+            model: "anthropic/claude-opus-4.5",
             messages: apiMessages,
-            options: ["temperature": 0.7, "max_tokens": 512],
-            timeout: 90
+            options: ["temperature": 0.7, "max_tokens": 512]
         )
 
         let choices = response["choices"] as? [[String: Any]]

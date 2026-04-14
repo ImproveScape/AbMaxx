@@ -3,7 +3,7 @@ import SwiftUI
 struct HeatMapOverlayView: View {
     let zones: [HeatMapZone]
     let imageSize: CGSize
-    @State private var opacity: Double = 0
+    @State private var appeared: Bool = false
 
     var body: some View {
         Canvas { context, size in
@@ -20,29 +20,28 @@ struct HeatMapOverlayView: View {
                 )
 
                 let color = heatColor(for: zone.definitionScore)
-                let zoneOpacity = heatOpacity(for: zone.definitionScore)
+                let opacity = appeared ? heatOpacity(for: zone.definitionScore) : 0
 
                 let path = Path(roundedRect: rect, cornerRadius: min(w, h) * 0.2)
-                context.fill(path, with: .color(color.opacity(zoneOpacity)))
-                context.stroke(path, with: .color(color.opacity(0.6)), lineWidth: 1.5)
+                context.fill(path, with: .color(color.opacity(opacity)))
 
-                let scoreText = "\(zone.definitionScore)"
-                var attrs = AttributeContainer()
-                attrs.font = .system(size: max(10, min(w, h) * 0.25), weight: .heavy)
-                attrs.foregroundColor = UIColor.white
-                let resolved = context.resolve(Text(AttributedString(scoreText, attributes: attrs)))
-                context.draw(resolved, at: CGPoint(x: cx, y: cy))
+                let borderOpacity = appeared ? 0.6 : 0
+                context.stroke(path, with: .color(color.opacity(borderOpacity)), lineWidth: 1.5)
+
+                if appeared {
+                    let scoreText = "\(zone.definitionScore)"
+                    var attrs = AttributeContainer()
+                    attrs.font = .system(size: max(10, min(w, h) * 0.25), weight: .heavy)
+                    attrs.foregroundColor = UIColor.white
+                    let resolved = context.resolve(Text(AttributedString(scoreText, attributes: attrs)))
+                    context.draw(resolved, at: CGPoint(x: cx, y: cy))
+                }
             }
         }
-        .opacity(opacity)
         .allowsHitTesting(false)
         .onAppear {
-            if opacity == 0 {
-                withAnimation(.easeOut(duration: 1.2)) {
-                    opacity = 1
-                }
-            } else {
-                opacity = 1
+            withAnimation(.easeOut(duration: 1.2)) {
+                appeared = true
             }
         }
     }
