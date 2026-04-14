@@ -278,9 +278,10 @@ struct AbHeatMapView: View {
                     .tracking(1.5)
 
                 HStack(spacing: 12) {
-                    legendDot(color: Color(red: 0, green: 1, blue: 0.4), label: "Defined")
-                    legendDot(color: Color(red: 1, green: 0.85, blue: 0), label: "Moderate")
-                    legendDot(color: Color(red: 1, green: 0.15, blue: 0.15), label: "Needs Work")
+                    legendDot(color: AppTheme.subscoreColor(for: 85), label: "85+")
+                    legendDot(color: AppTheme.subscoreColor(for: 75), label: "75–84")
+                    legendDot(color: AppTheme.subscoreColor(for: 65), label: "65–74")
+                    legendDot(color: AppTheme.subscoreColor(for: 50), label: "<65")
                 }
             }
             .padding(16)
@@ -482,7 +483,7 @@ struct AbHeatMapView: View {
                     .lineLimit(1)
                 Text(zone.needsWork ? "Needs work" : "Defined")
                     .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(zone.needsWork ? AppTheme.destructive : AppTheme.success)
+                    .foregroundStyle(color)
             }
 
             Spacer(minLength: 0)
@@ -501,11 +502,7 @@ struct AbHeatMapView: View {
     }
 
     private func zoneScoreColor(_ score: Int) -> Color {
-        if score >= 80 { return Color(red: 0.0, green: 1.0, blue: 0.4) }
-        if score >= 65 { return AppTheme.success }
-        if score >= 50 { return AppTheme.warning }
-        if score >= 35 { return AppTheme.orange }
-        return AppTheme.destructive
+        AppTheme.subscoreColor(for: score)
     }
 
     // MARK: - Technical Notes
@@ -620,11 +617,7 @@ struct ZoneDetailSheet: View {
     let zone: HeatMapZone
 
     private var scoreColor: Color {
-        if zone.definitionScore >= 80 { return Color(red: 0.0, green: 1.0, blue: 0.4) }
-        if zone.definitionScore >= 65 { return AppTheme.success }
-        if zone.definitionScore >= 50 { return AppTheme.warning }
-        if zone.definitionScore >= 35 { return AppTheme.orange }
-        return AppTheme.destructive
+        AppTheme.subscoreColor(for: zone.definitionScore)
     }
 
     private var gradeLabel: String {
@@ -703,14 +696,14 @@ struct ZoneDetailSheet: View {
             HStack(spacing: 8) {
                 Image(systemName: zone.needsWork ? "exclamationmark.triangle.fill" : "checkmark.seal.fill")
                     .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(zone.needsWork ? AppTheme.destructive : AppTheme.success)
+                    .foregroundStyle(scoreColor)
                 Text(zone.needsWork ? "This zone needs targeted work to improve definition" : "This zone shows strong muscle definition")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(zone.needsWork ? AppTheme.destructive : AppTheme.success)
+                    .foregroundStyle(scoreColor)
             }
             .frame(maxWidth: .infinity)
             .padding(14)
-            .background((zone.needsWork ? AppTheme.destructive : AppTheme.success).opacity(0.08))
+            .background(scoreColor.opacity(0.08))
             .clipShape(.rect(cornerRadius: 12))
             .padding(.horizontal, 20)
 

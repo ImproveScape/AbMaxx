@@ -162,10 +162,11 @@ Return ONLY this JSON, no other text:
         let prompt = """
 Edit this physique photo to add a professional sports-medicine style heat map overlay directly on the abdominal muscles. Keep the original photo fully visible underneath.
 
-Overlay semi-transparent color zones on each muscle group:
-- Bright green/cyan glow on areas with HIGH definition (score 75+)
-- Yellow/amber glow on MODERATE definition areas (score 50-74)
-- Red/orange glow on areas that NEED WORK (score below 50)
+Overlay semi-transparent color zones on each muscle group using these exact score colors:
+- Score 85+ = vivid iOS green (#30D158)
+- Score 75-84 = bright system yellow (#FFD60A)
+- Score 65-74 = system orange (#FF9F0A)
+- Score below 65 = system red (#FF3B30)
 
 Zone analysis:
 \(zoneDescriptions)
@@ -173,7 +174,7 @@ Zone analysis:
 Strongest: \(analysis.strongestArea)
 Weakest: \(analysis.weakestArea)
 
-Make it look like a high-tech body composition scan / thermal imaging analysis. Add thin white contour lines tracing each muscle group boundary. Add small score labels (like "87" or "42") near each zone. The overall look should be clinical, technical, and futuristic — like an elite sports lab diagnostic image. Keep the person's body clearly visible through the overlay.
+Make it look like a high-tech body composition scan / thermal imaging analysis. Add thin white contour lines tracing each muscle group boundary. Add small score labels (like "87" or "42") near each zone. Use the score color assigned to each specific zone exactly — do not substitute cyan, lime, amber gradients, or generic heatmap colors. The overall look should be clinical, technical, and futuristic — like an elite sports lab diagnostic image. Keep the person's body clearly visible through the overlay.
 """
 
         do {
