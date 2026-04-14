@@ -76,9 +76,9 @@ ANCHOR 2 — ELITE (overall 92-95):
 Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. ONLY apply this anchor if body fat is visually confirmed below 12% AND all 6 blocks show undeniable razor grooves. Muscular physiques with soft definition do not qualify for this anchor regardless of muscle size.
 upper_abs 92-95, lower_abs 89-93, obliques 89-93, deep_core 89-93, v_taper 87-91, symmetry 87-91
 
-ANCHOR 3 — VERY ADVANCED (overall 85-89):
+ANCHOR 3 — VERY ADVANCED (overall 86-90):
 Body fat 11-13%. Clear 6-pack with solid groove depth. All 6 blocks visible including below navel. Tight skin. Good obliques visible. Strong athletic midsection with real definition.
-upper_abs 86-90, lower_abs 82-87, obliques 83-88, deep_core 83-88, v_taper 80-85, symmetry 82-87
+upper_abs 87-92, lower_abs 83-89, obliques 84-90, deep_core 84-90, v_taper 81-86, symmetry 83-89
 
 ANCHOR 4 — ADVANCED (overall 80-84):
 Body fat 13-15%. Clear upper abs with grooves. Lower definition present but fading below navel. Good obliques visible. Solid athletic look. Lower blocks may show faint outline.

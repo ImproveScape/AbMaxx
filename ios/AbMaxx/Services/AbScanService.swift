@@ -71,9 +71,9 @@ upper_abs 95-98, lower_abs 93-96, obliques 93-96, deep_core 93-96, v_taper 91-94
 ANCHOR 2 \u{2014} ELITE (score 93-95):
 Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness on every block. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. If all 6 blocks are razor sharp with deep grooves and tight skin this is ANCHOR 2 minimum \u{2014} do not let a slightly higher BF estimate pull this into a lower anchor.
 upper_abs 93-96, lower_abs 90-94, obliques 90-94, deep_core 90-94, v_taper 88-91, symmetry 88-91
-ANCHOR 3 \u{2014} VERY ADVANCED (score 88-92):
-Body fat 10-13%. Clear 6-pack with solid groove depth. All 6 blocks visible including below navel. Tight skin. Good obliques. Strong athletic midsection.
-upper_abs 88-92, lower_abs 84-89, obliques 86-90, deep_core 86-90, v_taper 83-87, symmetry 84-88
+ANCHOR 3 \u{2014} VERY ADVANCED (overall 86-90):
+Body fat 11-13%. Clear 6-pack with solid groove depth. All 6 blocks visible including below navel. Tight skin. Good obliques visible. Strong athletic midsection with real definition.
+upper_abs 87-92, lower_abs 83-89, obliques 84-90, deep_core 84-90, v_taper 81-86, symmetry 83-89
 ANCHOR 4 \u{2014} ADVANCED (score 83-87):
 Body fat 13-15%. Developing 6-pack. Upper blocks sharp with clear grooves. Lower definition fading below navel. Good obliques visible. Solid athletic look.
 upper_abs 83-88, lower_abs 77-83, obliques 80-85, deep_core 80-85, v_taper 78-82, symmetry 80-84
