@@ -643,7 +643,8 @@ struct BreakdownTabView: View {
                 upperAbsScore: scan.upperAbsScore,
                 lowerAbsScore: scan.lowerAbsScore,
                 obliquesScore: scan.obliquesScore,
-                vTaperScore: scan.frame
+                vTaperScore: scan.frame,
+                deepCoreScore: scan.deepCoreScore
             )
             .frame(maxWidth: .infinity)
             .frame(height: 200)

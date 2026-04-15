@@ -5,237 +5,362 @@ struct AnatomyScoreOverlayView: View {
     let lowerAbsScore: Int
     let obliquesScore: Int
     let vTaperScore: Int
-
-    @State private var appeared: Bool = false
-
-    private static let imageURL = "https://r2-pub.rork.com/projects/ef37pg3laezo1t2hj7mt0/assets/9538eb95-b1ae-4581-b7cb-569bb4160e1c.png"
+    let deepCoreScore: Int
 
     var body: some View {
-        ZStack {
-            Color.clear
-
-            AsyncImage(url: URL(string: Self.imageURL)) { phase in
-                if let image = phase.image {
-                    GeometryReader { geo in
-                        let side = min(geo.size.width, geo.size.height)
-                        ZStack {
-                            Canvas { context, canvasSize in
-                                guard appeared else { return }
-                                drawAllZones(context: context, size: canvasSize)
-                            }
-                            .frame(width: side, height: side)
-
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: side, height: side)
-                                .blendMode(.screen)
-                                .allowsHitTesting(false)
-                        }
-                        .frame(width: geo.size.width, height: geo.size.height)
-                    }
-                } else if phase.error != nil {
-                    placeholderView
-                } else {
-                    placeholderView
-                        .overlay {
-                            ProgressView()
-                                .tint(AppTheme.primaryAccent)
-                        }
-                }
-            }
+        Canvas(opaque: false, colorMode: .nonLinear, rendersAsynchronously: true) { context, size in
+            drawDiagram(context: &context, size: size)
         }
+        .aspectRatio(1.0, contentMode: .fit)
+        .padding(20)
+        .background(cardBackground)
         .clipShape(.rect(cornerRadius: 14))
-        .onAppear {
-            withAnimation(.easeOut(duration: 0.8)) {
-                appeared = true
-            }
+        .accessibilityLabel("Anatomy score diagram")
+    }
+
+    private var cardBackground: Color {
+        Color(.sRGB, red: 10.0 / 255.0, green: 10.0 / 255.0, blue: 10.0 / 255.0, opacity: 1.0)
+    }
+
+    private var neutralMuscleFill: Color {
+        Color(.sRGB, red: 26.0 / 255.0, green: 26.0 / 255.0, blue: 26.0 / 255.0, opacity: 1.0)
+    }
+
+    private var outlineColor: Color {
+        Color(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: 0.9)
+    }
+
+    private func drawDiagram(context: inout GraphicsContext, size: CGSize) {
+        let outlineStyle: StrokeStyle = StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round)
+        let chestLeft: Path = chestPath(side: .left, size: size)
+        let chestRight: Path = chestPath(side: .right, size: size)
+        let upperAbs: [Path] = upperAbsPaths(size: size)
+        let lowerAbs: [Path] = lowerAbsPaths(size: size)
+        let leftOblique: Path = obliquePath(side: .left, size: size)
+        let rightOblique: Path = obliquePath(side: .right, size: size)
+        let leftVTaper: Path = vTaperPath(side: .left, size: size)
+        let rightVTaper: Path = vTaperPath(side: .right, size: size)
+        let deepCore: Path = deepCorePath(size: size)
+        let silhouette: Path = silhouettePath(size: size)
+        let centerLine: Path = centerDividerPath(size: size)
+        let rowLines: [Path] = abRowSeparatorPaths(size: size)
+
+        context.fill(chestLeft, with: .color(neutralMuscleFill))
+        context.fill(chestRight, with: .color(neutralMuscleFill))
+
+        for path in upperAbs {
+            context.fill(path, with: .color(zoneColor(for: upperAbsScore)))
         }
-    }
 
-    private var placeholderView: some View {
-        Color.clear
-            .aspectRatio(1.0, contentMode: .fit)
-    }
-
-    private func drawAllZones(context: GraphicsContext, size: CGSize) {
-        let w = size.width
-        let h = size.height
-        drawObliques(context: context, w: w, h: h)
-        drawVTaper(context: context, w: w, h: h)
-        drawUpperAbs(context: context, w: w, h: h)
-        drawLowerAbs(context: context, w: w, h: h)
-    }
-
-    private let dy: CGFloat = 0.04
-    private let dx: CGFloat = 0.04
-
-    // MARK: - Upper Abs (rows 1-2)
-
-    private func drawUpperAbs(context: GraphicsContext, w: CGFloat, h: CGFloat) {
-        let color = zoneColor(for: upperAbsScore)
-        let pad: CGFloat = 0.008
-
-        var r1l = Path()
-        r1l.move(to: pt(0.383 - dx, 0.297 + dy - pad, w, h))
-        r1l.addLine(to: pt(0.501, 0.292 + dy - pad, w, h))
-        r1l.addLine(to: pt(0.501, 0.370 + dy + pad, w, h))
-        r1l.addLine(to: pt(0.379 - dx, 0.370 + dy + pad, w, h))
-        r1l.closeSubpath()
-
-        var r1r = Path()
-        r1r.move(to: pt(0.499, 0.292 + dy - pad, w, h))
-        r1r.addLine(to: pt(0.617 + dx, 0.297 + dy - pad, w, h))
-        r1r.addLine(to: pt(0.621 + dx, 0.370 + dy + pad, w, h))
-        r1r.addLine(to: pt(0.499, 0.370 + dy + pad, w, h))
-        r1r.closeSubpath()
-
-        var r2l = Path()
-        r2l.move(to: pt(0.376 - dx, 0.379 + dy - pad, w, h))
-        r2l.addLine(to: pt(0.501, 0.376 + dy - pad, w, h))
-        r2l.addLine(to: pt(0.501, 0.450 + dy + pad, w, h))
-        r2l.addLine(to: pt(0.371 - dx, 0.450 + dy + pad, w, h))
-        r2l.closeSubpath()
-
-        var r2r = Path()
-        r2r.move(to: pt(0.499, 0.376 + dy - pad, w, h))
-        r2r.addLine(to: pt(0.624 + dx, 0.379 + dy - pad, w, h))
-        r2r.addLine(to: pt(0.629 + dx, 0.450 + dy + pad, w, h))
-        r2r.addLine(to: pt(0.499, 0.450 + dy + pad, w, h))
-        r2r.closeSubpath()
-
-        for path in [r1l, r1r, r2l, r2r] {
-            context.fill(path, with: .color(color))
+        for path in lowerAbs {
+            context.fill(path, with: .color(zoneColor(for: lowerAbsScore)))
         }
-    }
 
-    // MARK: - Lower Abs (rows 3-4)
+        context.fill(leftOblique, with: .color(zoneColor(for: obliquesScore)))
+        context.fill(rightOblique, with: .color(zoneColor(for: obliquesScore)))
+        context.fill(leftVTaper, with: .color(zoneColor(for: vTaperScore)))
+        context.fill(rightVTaper, with: .color(zoneColor(for: vTaperScore)))
+        context.fill(deepCore, with: .color(zoneColor(for: deepCoreScore).opacity(0.5)))
 
-    private func drawLowerAbs(context: GraphicsContext, w: CGFloat, h: CGFloat) {
-        let color = zoneColor(for: lowerAbsScore)
-        let pad: CGFloat = 0.008
+        context.stroke(chestLeft, with: .color(outlineColor), style: outlineStyle)
+        context.stroke(chestRight, with: .color(outlineColor), style: outlineStyle)
 
-        var r3l = Path()
-        r3l.move(to: pt(0.368 - dx, 0.459 + dy - pad, w, h))
-        r3l.addLine(to: pt(0.501, 0.456 + dy - pad, w, h))
-        r3l.addLine(to: pt(0.501, 0.532 + dy + pad, w, h))
-        r3l.addLine(to: pt(0.364 - dx, 0.532 + dy + pad, w, h))
-        r3l.closeSubpath()
-
-        var r3r = Path()
-        r3r.move(to: pt(0.499, 0.456 + dy - pad, w, h))
-        r3r.addLine(to: pt(0.632 + dx, 0.459 + dy - pad, w, h))
-        r3r.addLine(to: pt(0.636 + dx, 0.532 + dy + pad, w, h))
-        r3r.addLine(to: pt(0.499, 0.532 + dy + pad, w, h))
-        r3r.closeSubpath()
-
-        var r4l = Path()
-        r4l.move(to: pt(0.366 - dx, 0.542 + dy - pad, w, h))
-        r4l.addLine(to: pt(0.501, 0.539 + dy - pad, w, h))
-        r4l.addLine(to: pt(0.501, 0.612 + dy + pad, w, h))
-        r4l.addLine(to: pt(0.453, 0.627 + dy + pad, w, h))
-        r4l.addLine(to: pt(0.413 - dx, 0.619 + dy + pad, w, h))
-        r4l.addLine(to: pt(0.383 - dx, 0.597 + dy + pad, w, h))
-        r4l.closeSubpath()
-
-        var r4r = Path()
-        r4r.move(to: pt(0.499, 0.539 + dy - pad, w, h))
-        r4r.addLine(to: pt(0.634 + dx, 0.542 + dy - pad, w, h))
-        r4r.addLine(to: pt(0.617 + dx, 0.597 + dy + pad, w, h))
-        r4r.addLine(to: pt(0.587 + dx, 0.619 + dy + pad, w, h))
-        r4r.addLine(to: pt(0.547, 0.627 + dy + pad, w, h))
-        r4r.addLine(to: pt(0.499, 0.612 + dy + pad, w, h))
-        r4r.closeSubpath()
-
-        for path in [r3l, r3r, r4l, r4r] {
-            context.fill(path, with: .color(color))
+        for path in upperAbs {
+            context.stroke(path, with: .color(outlineColor), style: outlineStyle)
         }
+
+        for path in lowerAbs {
+            context.stroke(path, with: .color(outlineColor), style: outlineStyle)
+        }
+
+        context.stroke(leftOblique, with: .color(outlineColor), style: outlineStyle)
+        context.stroke(rightOblique, with: .color(outlineColor), style: outlineStyle)
+        context.stroke(leftVTaper, with: .color(outlineColor), style: outlineStyle)
+        context.stroke(rightVTaper, with: .color(outlineColor), style: outlineStyle)
+        context.stroke(deepCore, with: .color(outlineColor), style: outlineStyle)
+
+        for path in rowLines {
+            context.stroke(path, with: .color(outlineColor), style: outlineStyle)
+        }
+
+        context.stroke(centerLine, with: .color(outlineColor), style: outlineStyle)
+        context.stroke(silhouette, with: .color(outlineColor), style: outlineStyle)
     }
 
-    // MARK: - Obliques
-
-    private func drawObliques(context: GraphicsContext, w: CGFloat, h: CGFloat) {
-        let color = zoneColor(for: obliquesScore)
-        let ex: CGFloat = 0.012
-
-        var left = Path()
-        left.move(to: pt(0.381 - dx, 0.295 + dy - ex, w, h))
-        left.addLine(to: pt(0.312 - dx - ex, 0.272 + dy - ex, w, h))
-        left.addLine(to: pt(0.278 - dx - ex, 0.303 + dy, w, h))
-        left.addLine(to: pt(0.328 - dx - ex, 0.332 + dy, w, h))
-        left.addLine(to: pt(0.280 - dx - ex, 0.360 + dy, w, h))
-        left.addLine(to: pt(0.322 - dx - ex, 0.390 + dy, w, h))
-        left.addLine(to: pt(0.272 - dx - ex, 0.418 + dy, w, h))
-        left.addLine(to: pt(0.270 - dx - ex, 0.462 + dy, w, h))
-        left.addLine(to: pt(0.278 - dx - ex, 0.512 + dy, w, h))
-        left.addLine(to: pt(0.298 - dx - ex, 0.558 + dy, w, h))
-        left.addLine(to: pt(0.320 - dx - ex, 0.592 + dy, w, h))
-        left.addLine(to: pt(0.342 - dx - ex, 0.618 + dy + ex, w, h))
-        left.addLine(to: pt(0.376 - dx, 0.600 + dy + ex, w, h))
-        left.addLine(to: pt(0.366 - dx, 0.542 + dy, w, h))
-        left.addLine(to: pt(0.364 - dx, 0.532 + dy, w, h))
-        left.addLine(to: pt(0.368 - dx, 0.459 + dy, w, h))
-        left.addLine(to: pt(0.371 - dx, 0.450 + dy, w, h))
-        left.addLine(to: pt(0.376 - dx, 0.379 + dy, w, h))
-        left.addLine(to: pt(0.379 - dx, 0.370 + dy, w, h))
-        left.closeSubpath()
-        context.fill(left, with: .color(color))
-
-        var right = Path()
-        right.move(to: pt(0.619 + dx, 0.295 + dy - ex, w, h))
-        right.addLine(to: pt(0.688 + dx + ex, 0.272 + dy - ex, w, h))
-        right.addLine(to: pt(0.722 + dx + ex, 0.303 + dy, w, h))
-        right.addLine(to: pt(0.672 + dx + ex, 0.332 + dy, w, h))
-        right.addLine(to: pt(0.720 + dx + ex, 0.360 + dy, w, h))
-        right.addLine(to: pt(0.678 + dx + ex, 0.390 + dy, w, h))
-        right.addLine(to: pt(0.728 + dx + ex, 0.418 + dy, w, h))
-        right.addLine(to: pt(0.730 + dx + ex, 0.462 + dy, w, h))
-        right.addLine(to: pt(0.722 + dx + ex, 0.512 + dy, w, h))
-        right.addLine(to: pt(0.702 + dx + ex, 0.558 + dy, w, h))
-        right.addLine(to: pt(0.680 + dx + ex, 0.592 + dy, w, h))
-        right.addLine(to: pt(0.658 + dx + ex, 0.618 + dy + ex, w, h))
-        right.addLine(to: pt(0.624 + dx, 0.600 + dy + ex, w, h))
-        right.addLine(to: pt(0.634 + dx, 0.542 + dy, w, h))
-        right.addLine(to: pt(0.636 + dx, 0.532 + dy, w, h))
-        right.addLine(to: pt(0.632 + dx, 0.459 + dy, w, h))
-        right.addLine(to: pt(0.629 + dx, 0.450 + dy, w, h))
-        right.addLine(to: pt(0.624 + dx, 0.379 + dy, w, h))
-        right.addLine(to: pt(0.621 + dx, 0.370 + dy, w, h))
-        right.closeSubpath()
-        context.fill(right, with: .color(color))
+    private func chestPath(side: DiagramSide, size: CGSize) -> Path {
+        var path: Path = Path()
+        path.move(to: point(mirroredX(0.24, side: side), 0.16, in: size))
+        path.addCurve(
+            to: point(mirroredX(0.37, side: side), 0.12, in: size),
+            control1: point(mirroredX(0.27, side: side), 0.11, in: size),
+            control2: point(mirroredX(0.32, side: side), 0.10, in: size)
+        )
+        path.addQuadCurve(
+            to: point(mirroredX(0.48, side: side), 0.20, in: size),
+            control: point(mirroredX(0.45, side: side), 0.11, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.45, side: side), 0.30, in: size),
+            control1: point(mirroredX(0.50, side: side), 0.24, in: size),
+            control2: point(mirroredX(0.48, side: side), 0.29, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.30, side: side), 0.27, in: size),
+            control1: point(mirroredX(0.40, side: side), 0.31, in: size),
+            control2: point(mirroredX(0.34, side: side), 0.30, in: size)
+        )
+        path.addQuadCurve(
+            to: point(mirroredX(0.24, side: side), 0.16, in: size),
+            control: point(mirroredX(0.25, side: side), 0.23, in: size)
+        )
+        path.closeSubpath()
+        return path
     }
 
-    // MARK: - V-Taper
-
-    private func drawVTaper(context: GraphicsContext, w: CGFloat, h: CGFloat) {
-        let color = zoneColor(for: vTaperScore)
-        let ex: CGFloat = 0.008
-
-        var leftV = Path()
-        leftV.move(to: pt(0.377 - dx - ex, 0.620 + dy, w, h))
-        leftV.addLine(to: pt(0.410, 0.634 + dy, w, h))
-        leftV.addLine(to: pt(0.452 + ex, 0.773 + dy + ex, w, h))
-        leftV.addLine(to: pt(0.440, 0.778 + dy + ex, w, h))
-        leftV.addLine(to: pt(0.395 - dx - ex, 0.642 + dy, w, h))
-        leftV.addLine(to: pt(0.368 - dx - ex, 0.624 + dy, w, h))
-        leftV.closeSubpath()
-        context.fill(leftV, with: .color(color))
-
-        var rightV = Path()
-        rightV.move(to: pt(0.623 + dx + ex, 0.620 + dy, w, h))
-        rightV.addLine(to: pt(0.590, 0.634 + dy, w, h))
-        rightV.addLine(to: pt(0.548 - ex, 0.773 + dy + ex, w, h))
-        rightV.addLine(to: pt(0.560, 0.778 + dy + ex, w, h))
-        rightV.addLine(to: pt(0.605 + dx + ex, 0.642 + dy, w, h))
-        rightV.addLine(to: pt(0.632 + dx + ex, 0.624 + dy, w, h))
-        rightV.closeSubpath()
-        context.fill(rightV, with: .color(color))
+    private func upperAbsPaths(size: CGSize) -> [Path] {
+        [
+            muscleBlockPath(
+                in: normalizedRect(0.388, 0.245, 0.098, 0.094, in: size),
+                side: .left,
+                topInset: size.width * 0.014,
+                bottomInset: size.width * 0.008
+            ),
+            muscleBlockPath(
+                in: normalizedRect(0.514, 0.245, 0.098, 0.094, in: size),
+                side: .right,
+                topInset: size.width * 0.014,
+                bottomInset: size.width * 0.008
+            ),
+            muscleBlockPath(
+                in: normalizedRect(0.382, 0.352, 0.104, 0.098, in: size),
+                side: .left,
+                topInset: size.width * 0.012,
+                bottomInset: size.width * 0.008
+            ),
+            muscleBlockPath(
+                in: normalizedRect(0.514, 0.352, 0.104, 0.098, in: size),
+                side: .right,
+                topInset: size.width * 0.012,
+                bottomInset: size.width * 0.008
+            )
+        ]
     }
 
-    // MARK: - Helpers
+    private func lowerAbsPaths(size: CGSize) -> [Path] {
+        [
+            muscleBlockPath(
+                in: normalizedRect(0.376, 0.467, 0.110, 0.102, in: size),
+                side: .left,
+                topInset: size.width * 0.011,
+                bottomInset: size.width * 0.012
+            ),
+            muscleBlockPath(
+                in: normalizedRect(0.514, 0.467, 0.110, 0.102, in: size),
+                side: .right,
+                topInset: size.width * 0.011,
+                bottomInset: size.width * 0.012
+            ),
+            muscleBlockPath(
+                in: normalizedRect(0.389, 0.584, 0.091, 0.103, in: size),
+                side: .left,
+                topInset: size.width * 0.008,
+                bottomInset: size.width * 0.020
+            ),
+            muscleBlockPath(
+                in: normalizedRect(0.520, 0.584, 0.091, 0.103, in: size),
+                side: .right,
+                topInset: size.width * 0.008,
+                bottomInset: size.width * 0.020
+            )
+        ]
+    }
 
-    private func pt(_ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat) -> CGPoint {
-        CGPoint(x: x * w, y: y * h)
+    private func obliquePath(side: DiagramSide, size: CGSize) -> Path {
+        var path: Path = Path()
+        path.move(to: point(mirroredX(0.33, side: side), 0.24, in: size))
+        path.addCurve(
+            to: point(mirroredX(0.27, side: side), 0.42, in: size),
+            control1: point(mirroredX(0.30, side: side), 0.28, in: size),
+            control2: point(mirroredX(0.25, side: side), 0.34, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.31, side: side), 0.72, in: size),
+            control1: point(mirroredX(0.24, side: side), 0.54, in: size),
+            control2: point(mirroredX(0.25, side: side), 0.67, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.40, side: side), 0.79, in: size),
+            control1: point(mirroredX(0.34, side: side), 0.77, in: size),
+            control2: point(mirroredX(0.37, side: side), 0.80, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.44, side: side), 0.67, in: size),
+            control1: point(mirroredX(0.42, side: side), 0.76, in: size),
+            control2: point(mirroredX(0.45, side: side), 0.72, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.41, side: side), 0.30, in: size),
+            control1: point(mirroredX(0.41, side: side), 0.57, in: size),
+            control2: point(mirroredX(0.38, side: side), 0.38, in: size)
+        )
+        path.addQuadCurve(
+            to: point(mirroredX(0.33, side: side), 0.24, in: size),
+            control: point(mirroredX(0.38, side: side), 0.25, in: size)
+        )
+        path.closeSubpath()
+        return path
+    }
+
+    private func vTaperPath(side: DiagramSide, size: CGSize) -> Path {
+        var path: Path = Path()
+        path.move(to: point(mirroredX(0.41, side: side), 0.70, in: size))
+        path.addCurve(
+            to: point(mirroredX(0.34, side: side), 0.83, in: size),
+            control1: point(mirroredX(0.38, side: side), 0.74, in: size),
+            control2: point(mirroredX(0.35, side: side), 0.79, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.46, side: side), 0.90, in: size),
+            control1: point(mirroredX(0.36, side: side), 0.88, in: size),
+            control2: point(mirroredX(0.41, side: side), 0.91, in: size)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.49, side: side), 0.74, in: size),
+            control1: point(mirroredX(0.49, side: side), 0.87, in: size),
+            control2: point(mirroredX(0.51, side: side), 0.79, in: size)
+        )
+        path.addQuadCurve(
+            to: point(mirroredX(0.41, side: side), 0.70, in: size),
+            control: point(mirroredX(0.46, side: side), 0.71, in: size)
+        )
+        path.closeSubpath()
+        return path
+    }
+
+    private func deepCorePath(size: CGSize) -> Path {
+        let rect: CGRect = normalizedRect(0.488, 0.238, 0.024, 0.456, in: size)
+        return Path(roundedRect: rect, cornerRadius: size.width * 0.012)
+    }
+
+    private func silhouettePath(size: CGSize) -> Path {
+        var path: Path = Path()
+        path.move(to: point(0.45, 0.06, in: size))
+        path.addQuadCurve(to: point(0.38, 0.07, in: size), control: point(0.41, 0.03, in: size))
+        path.addCurve(
+            to: point(0.20, 0.18, in: size),
+            control1: point(0.31, 0.08, in: size),
+            control2: point(0.24, 0.11, in: size)
+        )
+        path.addCurve(
+            to: point(0.18, 0.34, in: size),
+            control1: point(0.15, 0.22, in: size),
+            control2: point(0.15, 0.28, in: size)
+        )
+        path.addCurve(
+            to: point(0.23, 0.72, in: size),
+            control1: point(0.18, 0.48, in: size),
+            control2: point(0.16, 0.64, in: size)
+        )
+        path.addCurve(
+            to: point(0.34, 0.88, in: size),
+            control1: point(0.26, 0.79, in: size),
+            control2: point(0.29, 0.85, in: size)
+        )
+        path.addQuadCurve(to: point(0.50, 0.95, in: size), control: point(0.41, 0.94, in: size))
+        path.addQuadCurve(to: point(0.66, 0.88, in: size), control: point(0.59, 0.94, in: size))
+        path.addCurve(
+            to: point(0.77, 0.72, in: size),
+            control1: point(0.71, 0.85, in: size),
+            control2: point(0.74, 0.79, in: size)
+        )
+        path.addCurve(
+            to: point(0.82, 0.34, in: size),
+            control1: point(0.84, 0.64, in: size),
+            control2: point(0.82, 0.48, in: size)
+        )
+        path.addCurve(
+            to: point(0.80, 0.18, in: size),
+            control1: point(0.85, 0.28, in: size),
+            control2: point(0.85, 0.22, in: size)
+        )
+        path.addCurve(
+            to: point(0.62, 0.07, in: size),
+            control1: point(0.76, 0.11, in: size),
+            control2: point(0.69, 0.08, in: size)
+        )
+        path.addQuadCurve(to: point(0.55, 0.06, in: size), control: point(0.59, 0.03, in: size))
+        return path
+    }
+
+    private func centerDividerPath(size: CGSize) -> Path {
+        var path: Path = Path()
+        path.move(to: point(0.50, 0.238, in: size))
+        path.addLine(to: point(0.50, 0.694, in: size))
+        return path
+    }
+
+    private func abRowSeparatorPaths(size: CGSize) -> [Path] {
+        [
+            separatorLinePath(y: 0.347, size: size),
+            separatorLinePath(y: 0.462, size: size),
+            separatorLinePath(y: 0.578, size: size)
+        ]
+    }
+
+    private func separatorLinePath(y: CGFloat, size: CGSize) -> Path {
+        var path: Path = Path()
+        path.move(to: point(0.39, y, in: size))
+        path.addQuadCurve(to: point(0.61, y, in: size), control: point(0.50, y + 0.006, in: size))
+        return path
+    }
+
+    private func muscleBlockPath(in rect: CGRect, side: DiagramSide, topInset: CGFloat, bottomInset: CGFloat) -> Path {
+        let outerTopX: CGFloat = side == .left ? rect.minX + topInset : rect.minX
+        let innerTopX: CGFloat = side == .left ? rect.maxX : rect.maxX - topInset
+        let innerBottomX: CGFloat = side == .left ? rect.maxX - bottomInset : rect.maxX
+        let outerBottomX: CGFloat = side == .left ? rect.minX : rect.minX + bottomInset
+        let topY: CGFloat = rect.minY + rect.height * 0.06
+        let bottomY: CGFloat = rect.maxY - rect.height * 0.04
+
+        var path: Path = Path()
+        path.move(to: CGPoint(x: outerTopX, y: topY))
+        path.addQuadCurve(
+            to: CGPoint(x: innerTopX, y: rect.minY + rect.height * 0.05),
+            control: CGPoint(x: rect.midX, y: rect.minY - rect.height * 0.08)
+        )
+        path.addCurve(
+            to: CGPoint(x: innerBottomX, y: bottomY),
+            control1: CGPoint(x: rect.maxX + rect.width * 0.02, y: rect.minY + rect.height * 0.32),
+            control2: CGPoint(x: rect.maxX + rect.width * 0.01, y: rect.maxY - rect.height * 0.28)
+        )
+        path.addQuadCurve(
+            to: CGPoint(x: outerBottomX, y: rect.maxY - rect.height * 0.02),
+            control: CGPoint(x: rect.midX, y: rect.maxY + rect.height * 0.10)
+        )
+        path.addCurve(
+            to: CGPoint(x: outerTopX, y: topY),
+            control1: CGPoint(x: rect.minX - rect.width * 0.01, y: rect.maxY - rect.height * 0.28),
+            control2: CGPoint(x: rect.minX - rect.width * 0.02, y: rect.minY + rect.height * 0.32)
+        )
+        path.closeSubpath()
+        return path
+    }
+
+    private func normalizedRect(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat, in size: CGSize) -> CGRect {
+        CGRect(
+            x: size.width * x,
+            y: size.height * y,
+            width: size.width * width,
+            height: size.height * height
+        )
+    }
+
+    private func mirroredX(_ x: CGFloat, side: DiagramSide) -> CGFloat {
+        side == .left ? x : 1.0 - x
+    }
+
+    private func point(_ x: CGFloat, _ y: CGFloat, in size: CGSize) -> CGPoint {
+        CGPoint(x: size.width * x, y: size.height * y)
     }
 
     private func zoneColor(for score: Int) -> Color {
@@ -244,4 +369,9 @@ struct AnatomyScoreOverlayView: View {
         if score >= 65 { return Color(red: 1.00, green: 0.55, blue: 0.10) }
         return Color(red: 1.00, green: 0.22, blue: 0.20)
     }
+}
+
+private enum DiagramSide {
+    case left
+    case right
 }
