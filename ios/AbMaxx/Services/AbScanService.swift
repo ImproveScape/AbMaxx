@@ -62,13 +62,11 @@ Body fat reference scale:
 
 SKIN TONE CORRECTION: Darker skin tones reduce visible contrast between muscle grooves in photos. This does not mean less definition exists — it means the camera captures less contrast. If skin tone is medium-dark to dark, add 2-3 points to all definition-based scores to correct for photo contrast reduction. Judge 3D muscle shape and groove depth, not brightness contrast between blocks. A deep groove on dark skin may appear as a moderate shadow — score it as the deep groove it actually is.
 
-BODY FAT CROSS-VALIDATION — enforce these hard caps strictly. No exceptions:
-- If body fat above 19%: upper_abs cannot exceed 68, lower_abs cannot exceed 58, structure cannot be 6-pack or 8-pack
-- If body fat 17-19%: upper_abs cannot exceed 76, lower_abs cannot exceed 67, structure cannot be 6-pack
-- If body fat 14-16%: upper_abs cannot exceed 88, lower_abs cannot exceed 83, structure cannot be 8-pack
-- If body fat 12-14%: upper_abs cannot exceed 93, lower_abs cannot exceed 89, full range available
-- If body fat 11-13%: full range available, 6-pack possible only if lower blocks show clear visible separation
-- If body fat below 11%: full range available including 8-pack if 4th row clearly visible
+BODY FAT CROSS-VALIDATION — use body fat ONLY to validate abs structure classification, never to cap individual subscore values. Each subscore is scored purely on what that zone visually looks like — the definition you see already reflects the body fat naturally.
+- If body fat above 16%: structure cannot be 6-pack or 8-pack regardless of what blocks appear to show
+- If body fat above 11%: structure cannot be 8-pack
+- If body fat below 11%: 8-pack possible only if 4th row is clearly and unmistakably visible
+- Never use body fat estimate to lower any individual subscore — score each zone on its visual definition only
 
 ANCHOR MATCHING — match the physique to exactly one anchor based solely on what you see. Score at the CENTER of the anchor range. Only move toward the top of the range if 3 or more zones show exceptional detail clearly above the anchor midpoint. Never score at the top by default.
 
