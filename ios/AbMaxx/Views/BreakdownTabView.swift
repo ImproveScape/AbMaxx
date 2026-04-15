@@ -613,9 +613,9 @@ struct BreakdownTabView: View {
                     .padding(.bottom, 10)
 
                 TabView(selection: $absAnalysisPage) {
-                    absMapPage(scan)
-                        .tag(0)
                     radarChartPage(scan)
+                        .tag(0)
+                    absMapPage(scan)
                         .tag(1)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
