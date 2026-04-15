@@ -647,7 +647,7 @@ struct BreakdownTabView: View {
                 deepCoreScore: scan.deepCoreScore
             )
             .frame(maxWidth: .infinity)
-            .frame(height: 200)
+            .frame(height: 220)
 
             HStack(spacing: 0) {
                 ForEach(allZonesData, id: \.name) { zone in

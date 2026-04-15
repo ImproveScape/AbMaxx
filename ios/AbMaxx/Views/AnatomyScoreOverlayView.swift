@@ -19,202 +19,269 @@ struct AnatomyScoreOverlayView: View {
                 .allowsHitTesting(false)
             }
             .overlay {
-                AsyncImage(url: bodyOutlineURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(1.0, contentMode: .fit)
-                            .blendMode(.screen)
-                            .allowsHitTesting(false)
-                    case .empty:
-                        EmptyView()
-                    case .failure:
-                        EmptyView()
-                    @unknown default:
-                        EmptyView()
-                    }
+                GeometryReader { geometry in
+                    bodyOutlineImage(in: geometry.size)
                 }
+                .allowsHitTesting(false)
             }
             .compositingGroup()
             .clipShape(.rect(cornerRadius: 14))
-            .padding(20)
+            .padding(8)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Anatomy score diagram")
-        }
+    }
 
     private var cardBackground: Color {
         Color(.sRGB, red: 10.0 / 255.0, green: 10.0 / 255.0, blue: 10.0 / 255.0, opacity: 1.0)
     }
 
+    @ViewBuilder
+    private func bodyOutlineImage(in size: CGSize) -> some View {
+        let rect: CGRect = diagramRect(in: size)
+
+        AsyncImage(url: bodyOutlineURL) { phase in
+            switch phase {
+            case .success(let image):
+                image
+                    .resizable()
+                    .interpolation(.high)
+                    .aspectRatio(1.0, contentMode: .fit)
+                    .blendMode(.screen)
+                    .frame(width: rect.width, height: rect.height)
+                    .position(x: rect.midX, y: rect.midY)
+            case .empty:
+                EmptyView()
+            case .failure:
+                EmptyView()
+            @unknown default:
+                EmptyView()
+            }
+        }
+    }
+
     private func drawZoneFills(context: inout GraphicsContext, size: CGSize) {
-        let upperAbs: [Path] = upperAbsPaths(size: size)
-        let lowerAbs: [Path] = lowerAbsPaths(size: size)
-        let leftOblique: Path = obliquePath(side: .left, size: size)
-        let rightOblique: Path = obliquePath(side: .right, size: size)
-        let leftVTaper: Path = vTaperPath(side: .left, size: size)
-        let rightVTaper: Path = vTaperPath(side: .right, size: size)
-        let deepCore: Path = deepCorePath(size: size)
+        let rect: CGRect = diagramRect(in: size)
+        let upperAbs: [Path] = upperAbsPaths(in: rect)
+        let lowerAbs: [Path] = lowerAbsPaths(in: rect)
+        let leftOblique: Path = obliquePath(side: .left, in: rect)
+        let rightOblique: Path = obliquePath(side: .right, in: rect)
+        let leftVTaper: Path = vTaperPath(side: .left, in: rect)
+        let rightVTaper: Path = vTaperPath(side: .right, in: rect)
+        let deepCore: Path = deepCorePath(in: rect)
+
+        var clippedContext: GraphicsContext = context
+        clippedContext.clip(to: torsoClipPath(in: rect))
 
         for path in upperAbs {
-            context.fill(path, with: .color(zoneColor(for: upperAbsScore).opacity(0.92)))
+            clippedContext.fill(path, with: .color(zoneColor(for: upperAbsScore).opacity(0.92)))
         }
 
         for path in lowerAbs {
-            context.fill(path, with: .color(zoneColor(for: lowerAbsScore).opacity(0.92)))
+            clippedContext.fill(path, with: .color(zoneColor(for: lowerAbsScore).opacity(0.92)))
         }
 
-        context.fill(leftOblique, with: .color(zoneColor(for: obliquesScore).opacity(0.82)))
-        context.fill(rightOblique, with: .color(zoneColor(for: obliquesScore).opacity(0.82)))
-        context.fill(leftVTaper, with: .color(zoneColor(for: vTaperScore).opacity(0.80)))
-        context.fill(rightVTaper, with: .color(zoneColor(for: vTaperScore).opacity(0.80)))
-        context.fill(deepCore, with: .color(zoneColor(for: deepCoreScore).opacity(0.48)))
+        clippedContext.fill(leftOblique, with: .color(zoneColor(for: obliquesScore).opacity(0.82)))
+        clippedContext.fill(rightOblique, with: .color(zoneColor(for: obliquesScore).opacity(0.82)))
+        clippedContext.fill(leftVTaper, with: .color(zoneColor(for: vTaperScore).opacity(0.80)))
+        clippedContext.fill(rightVTaper, with: .color(zoneColor(for: vTaperScore).opacity(0.80)))
+        clippedContext.fill(deepCore, with: .color(zoneColor(for: deepCoreScore).opacity(0.48)))
     }
 
-    private func upperAbsPaths(size: CGSize) -> [Path] {
+    private func upperAbsPaths(in rect: CGRect) -> [Path] {
         [
             muscleBlockPath(
-                in: normalizedRect(0.383, 0.438, 0.106, 0.080, in: size),
+                in: normalizedRect(0.372, 0.442, 0.117, 0.079, in: rect),
                 side: .left,
-                topInset: size.width * 0.008,
-                bottomInset: size.width * 0.008,
-                topCurveLift: size.width * 0.008,
-                bottomCurveDrop: size.width * 0.010
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.005,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.007
             ),
             muscleBlockPath(
-                in: normalizedRect(0.511, 0.438, 0.106, 0.080, in: size),
+                in: normalizedRect(0.511, 0.442, 0.117, 0.079, in: rect),
                 side: .right,
-                topInset: size.width * 0.008,
-                bottomInset: size.width * 0.008,
-                topCurveLift: size.width * 0.008,
-                bottomCurveDrop: size.width * 0.010
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.005,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.007
             ),
             muscleBlockPath(
-                in: normalizedRect(0.387, 0.533, 0.102, 0.085, in: size),
+                in: normalizedRect(0.377, 0.541, 0.112, 0.085, in: rect),
                 side: .left,
-                topInset: size.width * 0.007,
-                bottomInset: size.width * 0.008,
-                topCurveLift: size.width * 0.008,
-                bottomCurveDrop: size.width * 0.010
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.005,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.008
             ),
             muscleBlockPath(
-                in: normalizedRect(0.511, 0.533, 0.102, 0.085, in: size),
+                in: normalizedRect(0.511, 0.541, 0.112, 0.085, in: rect),
                 side: .right,
-                topInset: size.width * 0.007,
-                bottomInset: size.width * 0.008,
-                topCurveLift: size.width * 0.008,
-                bottomCurveDrop: size.width * 0.010
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.005,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.008
             )
         ]
     }
 
-    private func lowerAbsPaths(size: CGSize) -> [Path] {
+    private func lowerAbsPaths(in rect: CGRect) -> [Path] {
         [
             muscleBlockPath(
-                in: normalizedRect(0.391, 0.626, 0.098, 0.086, in: size),
+                in: normalizedRect(0.383, 0.644, 0.106, 0.094, in: rect),
                 side: .left,
-                topInset: size.width * 0.006,
-                bottomInset: size.width * 0.008,
-                topCurveLift: size.width * 0.007,
-                bottomCurveDrop: size.width * 0.012
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.006,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.009
             ),
             muscleBlockPath(
-                in: normalizedRect(0.511, 0.626, 0.098, 0.086, in: size),
+                in: normalizedRect(0.511, 0.644, 0.106, 0.094, in: rect),
                 side: .right,
-                topInset: size.width * 0.006,
-                bottomInset: size.width * 0.008,
-                topCurveLift: size.width * 0.007,
-                bottomCurveDrop: size.width * 0.012
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.006,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.009
             ),
             muscleBlockPath(
-                in: normalizedRect(0.395, 0.725, 0.096, 0.112, in: size),
+                in: normalizedRect(0.389, 0.753, 0.099, 0.117, in: rect),
                 side: .left,
-                topInset: size.width * 0.006,
-                bottomInset: size.width * 0.020,
-                topCurveLift: size.width * 0.007,
-                bottomCurveDrop: size.width * 0.018
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.008,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.012
             ),
             muscleBlockPath(
-                in: normalizedRect(0.509, 0.725, 0.096, 0.112, in: size),
+                in: normalizedRect(0.512, 0.753, 0.099, 0.117, in: rect),
                 side: .right,
-                topInset: size.width * 0.006,
-                bottomInset: size.width * 0.020,
-                topCurveLift: size.width * 0.007,
-                bottomCurveDrop: size.width * 0.018
+                topInset: rect.width * 0.004,
+                bottomInset: rect.width * 0.008,
+                topCurveLift: rect.width * 0.005,
+                bottomCurveDrop: rect.width * 0.012
             )
         ]
     }
 
-    private func obliquePath(side: DiagramSide, size: CGSize) -> Path {
+    private func obliquePath(side: DiagramSide, in rect: CGRect) -> Path {
         var path: Path = Path()
-        path.move(to: point(mirroredX(0.292, side: side), 0.356, in: size))
+        path.move(to: point(mirroredX(0.289, side: side), 0.371, in: rect))
         path.addCurve(
-            to: point(mirroredX(0.262, side: side), 0.454, in: size),
-            control1: point(mirroredX(0.271, side: side), 0.388, in: size),
-            control2: point(mirroredX(0.253, side: side), 0.416, in: size)
+            to: point(mirroredX(0.255, side: side), 0.460, in: rect),
+            control1: point(mirroredX(0.271, side: side), 0.398, in: rect),
+            control2: point(mirroredX(0.250, side: side), 0.430, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.288, side: side), 0.616, in: size),
-            control1: point(mirroredX(0.252, side: side), 0.520, in: size),
-            control2: point(mirroredX(0.261, side: side), 0.585, in: size)
+            to: point(mirroredX(0.272, side: side), 0.611, in: rect),
+            control1: point(mirroredX(0.247, side: side), 0.517, in: rect),
+            control2: point(mirroredX(0.248, side: side), 0.579, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.347, side: side), 0.668, in: size),
-            control1: point(mirroredX(0.307, side: side), 0.645, in: size),
-            control2: point(mirroredX(0.326, side: side), 0.665, in: size)
+            to: point(mirroredX(0.334, side: side), 0.668, in: rect),
+            control1: point(mirroredX(0.286, side: side), 0.644, in: rect),
+            control2: point(mirroredX(0.309, side: side), 0.665, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.373, side: side), 0.575, in: size),
-            control1: point(mirroredX(0.363, side: side), 0.649, in: size),
-            control2: point(mirroredX(0.378, side: side), 0.615, in: size)
+            to: point(mirroredX(0.376, side: side), 0.592, in: rect),
+            control1: point(mirroredX(0.358, side: side), 0.651, in: rect),
+            control2: point(mirroredX(0.377, side: side), 0.626, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.359, side: side), 0.405, in: size),
-            control1: point(mirroredX(0.367, side: side), 0.524, in: size),
-            control2: point(mirroredX(0.367, side: side), 0.450, in: size)
+            to: point(mirroredX(0.361, side: side), 0.428, in: rect),
+            control1: point(mirroredX(0.374, side: side), 0.535, in: rect),
+            control2: point(mirroredX(0.371, side: side), 0.476, in: rect)
         )
         path.addQuadCurve(
-            to: point(mirroredX(0.292, side: side), 0.356, in: size),
-            control: point(mirroredX(0.328, side: side), 0.367, in: size)
+            to: point(mirroredX(0.289, side: side), 0.371, in: rect),
+            control: point(mirroredX(0.330, side: side), 0.384, in: rect)
         )
         path.closeSubpath()
         return path
     }
 
-    private func vTaperPath(side: DiagramSide, size: CGSize) -> Path {
+    private func vTaperPath(side: DiagramSide, in rect: CGRect) -> Path {
         var path: Path = Path()
-        path.move(to: point(mirroredX(0.300, side: side), 0.690, in: size))
-        path.addCurve(
-            to: point(mirroredX(0.275, side: side), 0.776, in: size),
-            control1: point(mirroredX(0.286, side: side), 0.718, in: size),
-            control2: point(mirroredX(0.271, side: side), 0.748, in: size)
-        )
-        path.addCurve(
-            to: point(mirroredX(0.341, side: side), 0.859, in: size),
-            control1: point(mirroredX(0.281, side: side), 0.816, in: size),
-            control2: point(mirroredX(0.306, side: side), 0.848, in: size)
-        )
-        path.addCurve(
-            to: point(mirroredX(0.446, side: side), 0.834, in: size),
-            control1: point(mirroredX(0.386, side: side), 0.870, in: size),
-            control2: point(mirroredX(0.420, side: side), 0.860, in: size)
-        )
-        path.addCurve(
-            to: point(mirroredX(0.378, side: side), 0.714, in: size),
-            control1: point(mirroredX(0.425, side: side), 0.792, in: size),
-            control2: point(mirroredX(0.401, side: side), 0.744, in: size)
+        path.move(to: point(mirroredX(0.309, side: side), 0.704, in: rect))
+        path.addQuadCurve(
+            to: point(mirroredX(0.285, side: side), 0.790, in: rect),
+            control: point(mirroredX(0.292, side: side), 0.748, in: rect)
         )
         path.addQuadCurve(
-            to: point(mirroredX(0.300, side: side), 0.690, in: size),
-            control: point(mirroredX(0.340, side: side), 0.694, in: size)
+            to: point(mirroredX(0.319, side: side), 0.850, in: rect),
+            control: point(mirroredX(0.289, side: side), 0.833, in: rect)
+        )
+        path.addLine(to: point(mirroredX(0.393, side: side), 0.833, in: rect))
+        path.addQuadCurve(
+            to: point(mirroredX(0.374, side: side), 0.769, in: rect),
+            control: point(mirroredX(0.389, side: side), 0.805, in: rect)
+        )
+        path.addLine(to: point(mirroredX(0.364, side: side), 0.710, in: rect))
+        path.addQuadCurve(
+            to: point(mirroredX(0.309, side: side), 0.704, in: rect),
+            control: point(mirroredX(0.337, side: side), 0.697, in: rect)
         )
         path.closeSubpath()
         return path
     }
 
-    private func deepCorePath(size: CGSize) -> Path {
-        let rect: CGRect = normalizedRect(0.492, 0.435, 0.016, 0.390, in: size)
-        return Path(roundedRect: rect, cornerRadius: size.width * 0.008)
+    private func deepCorePath(in rect: CGRect) -> Path {
+        let pathRect: CGRect = normalizedRect(0.494, 0.438, 0.012, 0.399, in: rect)
+        return Path(roundedRect: pathRect, cornerRadius: rect.width * 0.006)
+    }
+
+    private func torsoClipPath(in rect: CGRect) -> Path {
+        var path: Path = Path()
+        path.move(to: point(0.334, 0.356, in: rect))
+        path.addCurve(
+            to: point(0.500, 0.394, in: rect),
+            control1: point(0.385, 0.343, in: rect),
+            control2: point(0.452, 0.382, in: rect)
+        )
+        path.addCurve(
+            to: point(0.666, 0.356, in: rect),
+            control1: point(0.548, 0.382, in: rect),
+            control2: point(0.615, 0.343, in: rect)
+        )
+        path.addCurve(
+            to: point(0.690, 0.470, in: rect),
+            control1: point(0.686, 0.393, in: rect),
+            control2: point(0.698, 0.430, in: rect)
+        )
+        path.addCurve(
+            to: point(0.684, 0.650, in: rect),
+            control1: point(0.682, 0.530, in: rect),
+            control2: point(0.691, 0.594, in: rect)
+        )
+        path.addCurve(
+            to: point(0.659, 0.874, in: rect),
+            control1: point(0.678, 0.724, in: rect),
+            control2: point(0.680, 0.820, in: rect)
+        )
+        path.addCurve(
+            to: point(0.500, 0.896, in: rect),
+            control1: point(0.614, 0.892, in: rect),
+            control2: point(0.554, 0.903, in: rect)
+        )
+        path.addCurve(
+            to: point(0.341, 0.874, in: rect),
+            control1: point(0.446, 0.903, in: rect),
+            control2: point(0.386, 0.892, in: rect)
+        )
+        path.addCurve(
+            to: point(0.316, 0.650, in: rect),
+            control1: point(0.320, 0.820, in: rect),
+            control2: point(0.298, 0.724, in: rect)
+        )
+        path.addCurve(
+            to: point(0.310, 0.470, in: rect),
+            control1: point(0.309, 0.594, in: rect),
+            control2: point(0.302, 0.530, in: rect)
+        )
+        path.addCurve(
+            to: point(0.334, 0.356, in: rect),
+            control1: point(0.302, 0.430, in: rect),
+            control2: point(0.314, 0.393, in: rect)
+        )
+        path.closeSubpath()
+        return path
     }
 
     private func muscleBlockPath(
@@ -230,38 +297,48 @@ struct AnatomyScoreOverlayView: View {
         let innerBottomX: CGFloat = side == .left ? rect.maxX - bottomInset : rect.maxX
         let outerBottomX: CGFloat = side == .left ? rect.minX : rect.minX + bottomInset
         let topY: CGFloat = rect.minY + rect.height * 0.08
-        let bottomY: CGFloat = rect.maxY - rect.height * 0.05
+        let bottomY: CGFloat = rect.maxY - rect.height * 0.04
 
         var path: Path = Path()
         path.move(to: CGPoint(x: outerTopX, y: topY))
         path.addQuadCurve(
-            to: CGPoint(x: innerTopX, y: rect.minY + rect.height * 0.06),
+            to: CGPoint(x: innerTopX, y: rect.minY + rect.height * 0.05),
             control: CGPoint(x: rect.midX, y: rect.minY - topCurveLift)
         )
         path.addCurve(
             to: CGPoint(x: innerBottomX, y: bottomY),
-            control1: CGPoint(x: rect.maxX + rect.width * 0.018, y: rect.minY + rect.height * 0.34),
-            control2: CGPoint(x: rect.maxX + rect.width * 0.012, y: rect.maxY - rect.height * 0.28)
+            control1: CGPoint(x: rect.maxX + rect.width * 0.014, y: rect.minY + rect.height * 0.32),
+            control2: CGPoint(x: rect.maxX + rect.width * 0.010, y: rect.maxY - rect.height * 0.26)
         )
         path.addQuadCurve(
-            to: CGPoint(x: outerBottomX, y: rect.maxY - rect.height * 0.02),
+            to: CGPoint(x: outerBottomX, y: rect.maxY - rect.height * 0.01),
             control: CGPoint(x: rect.midX, y: rect.maxY + bottomCurveDrop)
         )
         path.addCurve(
             to: CGPoint(x: outerTopX, y: topY),
-            control1: CGPoint(x: rect.minX - rect.width * 0.012, y: rect.maxY - rect.height * 0.28),
-            control2: CGPoint(x: rect.minX - rect.width * 0.018, y: rect.minY + rect.height * 0.34)
+            control1: CGPoint(x: rect.minX - rect.width * 0.010, y: rect.maxY - rect.height * 0.26),
+            control2: CGPoint(x: rect.minX - rect.width * 0.014, y: rect.minY + rect.height * 0.32)
         )
         path.closeSubpath()
         return path
     }
 
-    private func normalizedRect(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat, in size: CGSize) -> CGRect {
+    private func diagramRect(in size: CGSize) -> CGRect {
+        let side: CGFloat = min(size.width, size.height) * 1.08
+        return CGRect(
+            x: (size.width - side) / 2.0,
+            y: ((size.height - side) / 2.0) - (size.height * 0.012),
+            width: side,
+            height: side
+        )
+    }
+
+    private func normalizedRect(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat, in rect: CGRect) -> CGRect {
         CGRect(
-            x: size.width * x,
-            y: size.height * y,
-            width: size.width * width,
-            height: size.height * height
+            x: rect.minX + (rect.width * x),
+            y: rect.minY + (rect.height * y),
+            width: rect.width * width,
+            height: rect.height * height
         )
     }
 
@@ -269,8 +346,8 @@ struct AnatomyScoreOverlayView: View {
         side == .left ? x : 1.0 - x
     }
 
-    private func point(_ x: CGFloat, _ y: CGFloat, in size: CGSize) -> CGPoint {
-        CGPoint(x: size.width * x, y: size.height * y)
+    private func point(_ x: CGFloat, _ y: CGFloat, in rect: CGRect) -> CGPoint {
+        CGPoint(x: rect.minX + (rect.width * x), y: rect.minY + (rect.height * y))
     }
 
     private func zoneColor(for score: Int) -> Color {
@@ -281,7 +358,7 @@ struct AnatomyScoreOverlayView: View {
     }
 }
 
-private enum DiagramSide {
+nonisolated private enum DiagramSide {
     case left
     case right
 }
