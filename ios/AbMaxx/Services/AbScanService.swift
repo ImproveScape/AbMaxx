@@ -49,7 +49,7 @@ BODY FAT ESTIMATION — do this FIRST before scoring anything. Estimate body fat
 - Separation between muscle groups on chest and shoulders
 - How much fat covers the lower abs specifically
 - Overall skin tightness across the midsection
-- CRITICAL: Do not let large muscle mass push your BF estimate higher. A very muscular person can be 11-12% BF. Judge fat layer thickness, not body size.
+- CRITICAL: Muscle mass and body size have ZERO correlation with body fat percentage. A very muscular person can easily be 10-12% BF. A skinny person can be 20% BF. Judge ONLY the fat layer thickness over the abs, skin tightness, and groove visibility. Ignore how big, massive, or impressive the muscles look. Size is completely irrelevant to BF estimation. If you catch yourself thinking "this person looks big therefore higher BF" — that is wrong. Look only at skin thickness and definition quality.
 
 Body fat reference scale:
 5-7% = stage ready, extreme vascularity everywhere, paper thin skin, every muscle fully striated
@@ -60,6 +60,8 @@ Body fat reference scale:
 20-24% = minimal ab visibility, smooth midsection, some muscle shape visible
 25%+ = no ab visibility, significant fat covering entire midsection
 
+SKIN TONE CORRECTION: Darker skin tones reduce visible contrast between muscle grooves in photos. This does not mean less definition exists — it means the camera captures less contrast. If skin tone is medium-dark to dark, add 2-3 points to all definition-based scores to correct for photo contrast reduction. Judge 3D muscle shape and groove depth, not brightness contrast between blocks. A deep groove on dark skin may appear as a moderate shadow — score it as the deep groove it actually is.
+
 BODY FAT CROSS-VALIDATION — enforce these hard caps strictly. No exceptions:
 - If body fat above 19%: upper_abs cannot exceed 68, lower_abs cannot exceed 58, structure cannot be 6-pack or 8-pack
 - If body fat 17-19%: upper_abs cannot exceed 76, lower_abs cannot exceed 67, structure cannot be 6-pack
@@ -69,12 +71,14 @@ BODY FAT CROSS-VALIDATION — enforce these hard caps strictly. No exceptions:
 
 ANCHOR MATCHING — match the physique to exactly one anchor based solely on what you see. Score at the CENTER of the anchor range. Only move toward the top of the range if 3 or more zones show exceptional detail clearly above the anchor midpoint. Never score at the top by default.
 
+ANGLE HANDLING: If the photo is taken from a side or angled position, do not penalize scores for zones that are clearly visible from that angle. Score obliques, deep core, and v_taper based on what is clearly visible. For symmetry, if a side angle prevents full bilateral assessment, default symmetry to 87 minimum rather than scoring low due to limited visibility. Never reject or heavily penalize a photo solely because it is not perfectly front-facing if definition is clearly visible. Side angle photos often reveal oblique definition MORE clearly than front photos — if oblique cuts are razor sharp from a side angle, this qualifies for 91+ on obliques.
+
 ANCHOR 1 — COMPETITION ELITE (overall 97-99):
 Body fat 5-8%. Paper thin skin. Veins visible on abs themselves. Every single block razor separated with extreme deep grooves. Lower abs fully shredded. Obliques striated. Looks like a natural bodybuilding competitor on stage.
 upper_abs 97-99, lower_abs 95-98, obliques 95-98, deep_core 95-98, v_taper 93-96, symmetry 93-96
 
 ANCHOR 2 — ELITE (overall 93-96):
-Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. Apply this anchor if body fat appears to be below 13% AND all 6 blocks show clear razor grooves. For side angle or angled photos where definition is clearly visible, do not downgrade to a lower anchor due to angle alone — score the definition you can see. If symmetry cannot be fully assessed due to photo angle, default symmetry to 88 minimum. Muscular physiques with soft definition do not qualify for this anchor regardless of muscle size.
+Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. Apply this anchor if body fat appears to be below 13% AND all 6 blocks show clear razor grooves with visible depth. For side angle or angled photos where definition is clearly visible, do not downgrade to a lower anchor due to angle alone — score the definition you can see. If symmetry cannot be fully assessed due to photo angle, default symmetry to 88 minimum. Muscular physiques with soft definition still do not qualify — definition must be clear and visible.
 upper_abs 95-98, lower_abs 92-95, obliques 92-95, deep_core 92-95, v_taper 90-93, symmetry 90-93
 
 ANCHOR 3 — VERY ADVANCED (overall 88-92):
