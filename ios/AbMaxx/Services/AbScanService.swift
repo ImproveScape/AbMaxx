@@ -74,7 +74,7 @@ Body fat 5-8%. Paper thin skin. Veins visible on abs themselves. Every single bl
 upper_abs 97-99, lower_abs 95-98, obliques 95-98, deep_core 95-98, v_taper 93-96, symmetry 93-96
 
 ANCHOR 2 — ELITE (overall 93-96):
-Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. ONLY apply this anchor if body fat is visually confirmed below 12% AND all 6 blocks show undeniable razor grooves. Muscular physiques with soft definition do not qualify for this anchor regardless of muscle size.
+Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. Apply this anchor if body fat appears to be below 13% AND all 6 blocks show clear razor grooves. For side angle or angled photos where definition is clearly visible, do not downgrade to a lower anchor due to angle alone — score the definition you can see. If symmetry cannot be fully assessed due to photo angle, default symmetry to 88 minimum. Muscular physiques with soft definition do not qualify for this anchor regardless of muscle size.
 upper_abs 95-98, lower_abs 92-95, obliques 92-95, deep_core 92-95, v_taper 90-93, symmetry 90-93
 
 ANCHOR 3 — VERY ADVANCED (overall 88-92):
@@ -202,7 +202,7 @@ Return ONLY this exact JSON with no other text:
 }
 """
 
-    private let userPromptTemplate = "Analyze this physique photo using your exact grading criteria. Estimate body fat first then apply cross-validation rules strictly. Score ABS DEFINITION ONLY \u{2014} not muscle size or overall impressiveness. Compute the weighted score with body fat multiplier mentally and verify your subscores land in the correct visual bracket before returning. Sharp visible grooves = high score. Large muscles with soft undefined abs = lower score. Return only the JSON."
+    private let userPromptTemplate = "Analyze this physique photo using your exact grading criteria. Estimate body fat first then apply cross-validation rules strictly. Score ABS DEFINITION ONLY \u{2014} not muscle size or overall impressiveness. Compute the weighted score mentally using (upper_abs×0.25)+(lower_abs×0.25)+(obliques×0.20)+(deep_core×0.15)+(v_taper×0.10)+(symmetry×0.05) with no multiplier and verify your subscores land in the correct visual bracket before returning. Sharp visible grooves = high score. Large muscles with soft undefined abs = lower score. Return only the JSON."
 
     private func buildUserPrompt(profile: UserProfile) -> String {
         var biometrics: [String] = []
