@@ -106,7 +106,7 @@ struct AnatomyScoreOverlayView: View {
                 bottomCurveDrop: rect.width * 0.007
             ),
             muscleBlockPath(
-                in: normalizedRect(0.377, 0.541, 0.112, 0.085, in: rect),
+                in: normalizedRect(0.381, 0.533, 0.109, 0.083, in: rect),
                 side: .left,
                 topInset: rect.width * 0.004,
                 bottomInset: rect.width * 0.005,
@@ -114,7 +114,7 @@ struct AnatomyScoreOverlayView: View {
                 bottomCurveDrop: rect.width * 0.008
             ),
             muscleBlockPath(
-                in: normalizedRect(0.511, 0.541, 0.112, 0.085, in: rect),
+                in: normalizedRect(0.510, 0.533, 0.109, 0.083, in: rect),
                 side: .right,
                 topInset: rect.width * 0.004,
                 bottomInset: rect.width * 0.005,
@@ -127,7 +127,7 @@ struct AnatomyScoreOverlayView: View {
     private func lowerAbsPaths(in rect: CGRect) -> [Path] {
         [
             muscleBlockPath(
-                in: normalizedRect(0.383, 0.644, 0.106, 0.094, in: rect),
+                in: normalizedRect(0.388, 0.635, 0.101, 0.088, in: rect),
                 side: .left,
                 topInset: rect.width * 0.004,
                 bottomInset: rect.width * 0.006,
@@ -135,7 +135,7 @@ struct AnatomyScoreOverlayView: View {
                 bottomCurveDrop: rect.width * 0.009
             ),
             muscleBlockPath(
-                in: normalizedRect(0.511, 0.644, 0.106, 0.094, in: rect),
+                in: normalizedRect(0.511, 0.635, 0.101, 0.088, in: rect),
                 side: .right,
                 topInset: rect.width * 0.004,
                 bottomInset: rect.width * 0.006,
@@ -143,7 +143,7 @@ struct AnatomyScoreOverlayView: View {
                 bottomCurveDrop: rect.width * 0.009
             ),
             muscleBlockPath(
-                in: normalizedRect(0.389, 0.753, 0.099, 0.117, in: rect),
+                in: normalizedRect(0.394, 0.741, 0.094, 0.108, in: rect),
                 side: .left,
                 topInset: rect.width * 0.004,
                 bottomInset: rect.width * 0.008,
@@ -151,7 +151,7 @@ struct AnatomyScoreOverlayView: View {
                 bottomCurveDrop: rect.width * 0.012
             ),
             muscleBlockPath(
-                in: normalizedRect(0.512, 0.753, 0.099, 0.117, in: rect),
+                in: normalizedRect(0.512, 0.741, 0.094, 0.108, in: rect),
                 side: .right,
                 topInset: rect.width * 0.004,
                 bottomInset: rect.width * 0.008,
@@ -163,35 +163,45 @@ struct AnatomyScoreOverlayView: View {
 
     private func obliquePath(side: DiagramSide, in rect: CGRect) -> Path {
         var path: Path = Path()
-        path.move(to: point(mirroredX(0.289, side: side), 0.371, in: rect))
+        path.move(to: point(mirroredX(0.311, side: side), 0.434, in: rect))
         path.addCurve(
-            to: point(mirroredX(0.255, side: side), 0.460, in: rect),
-            control1: point(mirroredX(0.271, side: side), 0.398, in: rect),
-            control2: point(mirroredX(0.250, side: side), 0.430, in: rect)
+            to: point(mirroredX(0.274, side: side), 0.531, in: rect),
+            control1: point(mirroredX(0.289, side: side), 0.463, in: rect),
+            control2: point(mirroredX(0.266, side: side), 0.492, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.272, side: side), 0.611, in: rect),
-            control1: point(mirroredX(0.247, side: side), 0.517, in: rect),
-            control2: point(mirroredX(0.248, side: side), 0.579, in: rect)
+            to: point(mirroredX(0.286, side: side), 0.694, in: rect),
+            control1: point(mirroredX(0.266, side: side), 0.590, in: rect),
+            control2: point(mirroredX(0.270, side: side), 0.646, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.334, side: side), 0.668, in: rect),
-            control1: point(mirroredX(0.286, side: side), 0.644, in: rect),
-            control2: point(mirroredX(0.309, side: side), 0.665, in: rect)
+            to: point(mirroredX(0.322, side: side), 0.786, in: rect),
+            control1: point(mirroredX(0.294, side: side), 0.736, in: rect),
+            control2: point(mirroredX(0.306, side: side), 0.771, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.376, side: side), 0.592, in: rect),
-            control1: point(mirroredX(0.358, side: side), 0.651, in: rect),
-            control2: point(mirroredX(0.377, side: side), 0.626, in: rect)
+            to: point(mirroredX(0.356, side: side), 0.774, in: rect),
+            control1: point(mirroredX(0.334, side: side), 0.791, in: rect),
+            control2: point(mirroredX(0.346, side: side), 0.787, in: rect)
         )
         path.addCurve(
-            to: point(mirroredX(0.361, side: side), 0.428, in: rect),
-            control1: point(mirroredX(0.374, side: side), 0.535, in: rect),
-            control2: point(mirroredX(0.371, side: side), 0.476, in: rect)
+            to: point(mirroredX(0.389, side: side), 0.683, in: rect),
+            control1: point(mirroredX(0.373, side: side), 0.749, in: rect),
+            control2: point(mirroredX(0.388, side: side), 0.719, in: rect)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.393, side: side), 0.540, in: rect),
+            control1: point(mirroredX(0.391, side: side), 0.637, in: rect),
+            control2: point(mirroredX(0.397, side: side), 0.587, in: rect)
+        )
+        path.addCurve(
+            to: point(mirroredX(0.384, side: side), 0.450, in: rect),
+            control1: point(mirroredX(0.390, side: side), 0.505, in: rect),
+            control2: point(mirroredX(0.390, side: side), 0.473, in: rect)
         )
         path.addQuadCurve(
-            to: point(mirroredX(0.289, side: side), 0.371, in: rect),
-            control: point(mirroredX(0.330, side: side), 0.384, in: rect)
+            to: point(mirroredX(0.311, side: side), 0.434, in: rect),
+            control: point(mirroredX(0.346, side: side), 0.435, in: rect)
         )
         path.closeSubpath()
         return path
@@ -199,24 +209,27 @@ struct AnatomyScoreOverlayView: View {
 
     private func vTaperPath(side: DiagramSide, in rect: CGRect) -> Path {
         var path: Path = Path()
-        path.move(to: point(mirroredX(0.309, side: side), 0.704, in: rect))
+        path.move(to: point(mirroredX(0.321, side: side), 0.696, in: rect))
         path.addQuadCurve(
-            to: point(mirroredX(0.285, side: side), 0.790, in: rect),
-            control: point(mirroredX(0.292, side: side), 0.748, in: rect)
+            to: point(mirroredX(0.306, side: side), 0.761, in: rect),
+            control: point(mirroredX(0.308, side: side), 0.728, in: rect)
         )
         path.addQuadCurve(
-            to: point(mirroredX(0.319, side: side), 0.850, in: rect),
-            control: point(mirroredX(0.289, side: side), 0.833, in: rect)
+            to: point(mirroredX(0.336, side: side), 0.858, in: rect),
+            control: point(mirroredX(0.307, side: side), 0.822, in: rect)
         )
-        path.addLine(to: point(mirroredX(0.393, side: side), 0.833, in: rect))
         path.addQuadCurve(
-            to: point(mirroredX(0.374, side: side), 0.769, in: rect),
-            control: point(mirroredX(0.389, side: side), 0.805, in: rect)
+            to: point(mirroredX(0.403, side: side), 0.841, in: rect),
+            control: point(mirroredX(0.366, side: side), 0.866, in: rect)
         )
-        path.addLine(to: point(mirroredX(0.364, side: side), 0.710, in: rect))
+        path.addCurve(
+            to: point(mirroredX(0.361, side: side), 0.709, in: rect),
+            control1: point(mirroredX(0.397, side: side), 0.806, in: rect),
+            control2: point(mirroredX(0.381, side: side), 0.759, in: rect)
+        )
         path.addQuadCurve(
-            to: point(mirroredX(0.309, side: side), 0.704, in: rect),
-            control: point(mirroredX(0.337, side: side), 0.697, in: rect)
+            to: point(mirroredX(0.321, side: side), 0.696, in: rect),
+            control: point(mirroredX(0.340, side: side), 0.694, in: rect)
         )
         path.closeSubpath()
         return path
