@@ -49,7 +49,7 @@ BODY FAT ESTIMATION — do this FIRST before scoring anything. Estimate body fat
 - Separation between muscle groups on chest and shoulders
 - How much fat covers the lower abs specifically
 - Overall skin tightness across the midsection
-- CRITICAL: Muscle mass and body size have ZERO correlation with body fat percentage. A very muscular person can easily be 10-12% BF. A skinny person can be 20% BF. Judge ONLY the fat layer thickness over the abs, skin tightness, and groove visibility. Ignore how big, massive, or impressive the muscles look. Size is completely irrelevant to BF estimation. If you catch yourself thinking "this person looks big therefore higher BF" — that is wrong. Look only at skin thickness and definition quality.
+- CRITICAL: Muscle mass and body size have ZERO correlation with body fat percentage. A very muscular person can easily be 10-12% BF. A skinny person can be 20% BF. Judge ONLY the fat layer thickness over the abs, skin tightness, and groove visibility. Ignore how big, massive, or impressive the muscles look. Size is completely irrelevant to BF estimation. If you catch yourself thinking "this person looks big therefore higher BF" — that is wrong. Look only at skin thickness and definition quality. IMPORTANT: If upper abs show clear deep grooves and visible 3D blocks, body fat CANNOT be above 14%. If a full 6-pack is visible including below the navel with real grooves, body fat CANNOT be above 13%. Let the definition you see override any size-based assumption.
 
 Body fat reference scale:
 5-7% = stage ready, extreme vascularity everywhere, paper thin skin, every muscle fully striated
@@ -65,7 +65,8 @@ SKIN TONE CORRECTION: Darker skin tones reduce visible contrast between muscle g
 BODY FAT CROSS-VALIDATION — enforce these hard caps strictly. No exceptions:
 - If body fat above 19%: upper_abs cannot exceed 68, lower_abs cannot exceed 58, structure cannot be 6-pack or 8-pack
 - If body fat 17-19%: upper_abs cannot exceed 76, lower_abs cannot exceed 67, structure cannot be 6-pack
-- If body fat 14-16%: upper_abs cannot exceed 84, lower_abs cannot exceed 78, structure cannot be 6-pack or 8-pack
+- If body fat 14-16%: upper_abs cannot exceed 88, lower_abs cannot exceed 83, structure cannot be 8-pack
+- If body fat 12-14%: upper_abs cannot exceed 93, lower_abs cannot exceed 89, full range available
 - If body fat 11-13%: full range available, 6-pack possible only if lower blocks show clear visible separation
 - If body fat below 11%: full range available including 8-pack if 4th row clearly visible
 
@@ -81,13 +82,13 @@ ANCHOR 2 — ELITE (overall 93-96):
 Body fat 8-11%. All 6 blocks clearly visible with deep razor grooves including below navel. Strong 3D thickness. Extremely tight skin. Sharp oblique cuts visible both sides. Clear V-taper lines. Top 2% of people who train. Apply this anchor if body fat appears to be below 13% AND all 6 blocks show clear razor grooves with visible depth. For side angle or angled photos where definition is clearly visible, do not downgrade to a lower anchor due to angle alone — score the definition you can see. If symmetry cannot be fully assessed due to photo angle, default symmetry to 88 minimum. Muscular physiques with soft definition still do not qualify — definition must be clear and visible.
 upper_abs 95-98, lower_abs 92-95, obliques 92-95, deep_core 92-95, v_taper 90-93, symmetry 90-93
 
-ANCHOR 3 — VERY ADVANCED (overall 88-92):
+ANCHOR 3 — VERY ADVANCED (overall 88-93):
 Body fat 11-13%. Clear 6-pack with solid groove depth. All 6 blocks visible including below navel. Tight skin. Good obliques visible. Strong athletic midsection with real definition.
-upper_abs 90-94, lower_abs 86-91, obliques 87-92, deep_core 87-92, v_taper 84-88, symmetry 86-91
+upper_abs 91-95, lower_abs 87-92, obliques 88-93, deep_core 88-93, v_taper 85-89, symmetry 87-92
 
-ANCHOR 4 — ADVANCED (overall 84-88):
+ANCHOR 4 — ADVANCED (overall 85-89):
 Body fat 13-15%. Clear upper abs with grooves. Lower definition present but fading below navel. Good obliques visible. Solid athletic look. Lower blocks may show faint outline.
-upper_abs 85-90, lower_abs 79-85, obliques 82-87, deep_core 82-87, v_taper 79-84, symmetry 82-87
+upper_abs 87-92, lower_abs 81-87, obliques 84-89, deep_core 84-89, v_taper 81-86, symmetry 84-89
 
 ANCHOR 5 — INTERMEDIATE (overall 76-81):
 Body fat 15-17%. Clear 4-pack. Upper abs visible with grooves. Zero or minimal separation below navel. Obliques present but soft edges.
