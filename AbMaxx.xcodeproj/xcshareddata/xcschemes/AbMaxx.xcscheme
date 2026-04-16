@@ -4,7 +4,8 @@
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
-      buildImplicitDependencies = "YES">
+      buildImplicitDependencies = "YES"
+      runPostActionsOnFailure = "NO">
       <BuildActionEntries>
          <BuildActionEntry
             buildForTesting = "YES"
@@ -35,8 +36,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "105FC5882E9EAD3200EA8BCF"
-               BuildableName = "AbMaxx.xctest"
-               BlueprintName = "AbMaxx"
+               BuildableName = "AbMaxxTests.xctest"
+               BlueprintName = "AbMaxxTests"
                ReferencedContainer = "container:AbMaxx.xcodeproj">
             </BuildableReference>
          </TestableReference>
@@ -46,8 +47,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "105FC5922E9EAD3200EA8BCF"
-               BuildableName = "AbMaxx.xctest"
-               BlueprintName = "AbMaxx"
+               BuildableName = "AbMaxxUITests.xctest"
+               BlueprintName = "AbMaxxUITests"
                ReferencedContainer = "container:AbMaxx.xcodeproj">
             </BuildableReference>
          </TestableReference>
