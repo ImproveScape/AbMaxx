@@ -80,12 +80,6 @@ struct ContentView: View {
                     }
                 )
                 .transition(.opacity)
-            } else if !store.isPremium {
-                PaywallView(store: store) {
-                    vm.profile.isSubscribed = true
-                    vm.save()
-                }
-                .transition(.opacity)
             } else {
                 MainTabView(vm: vm, store: store, onSignOut: {
                     withAnimation(.snappy) {

@@ -503,24 +503,15 @@ class AppViewModel {
     }
 
     var canScan: Bool {
-        guard let mostRecent = scanResults.map({ $0.date }).max() else { return true }
-        let elapsed = Date().timeIntervalSince(mostRecent)
-        return elapsed >= 7 * 24 * 60 * 60
+        return true
     }
 
     var nextScanDate: Date? {
-        guard let mostRecent = scanResults.map({ $0.date }).max() else { return nil }
-        return mostRecent.addingTimeInterval(7 * 24 * 60 * 60)
+        return nil
     }
 
     var timeUntilNextScan: (days: Int, hours: Int, minutes: Int) {
-        guard let next = nextScanDate else { return (0, 0, 0) }
-        let remaining = max(next.timeIntervalSince(Date()), 0)
-        let totalMinutes = Int(remaining) / 60
-        let days = totalMinutes / (24 * 60)
-        let hours = (totalMinutes % (24 * 60)) / 60
-        let minutes = totalMinutes % 60
-        return (days, hours, minutes)
+        return (0, 0, 0)
     }
 
     var canTakePhotoToday: Bool {
@@ -531,9 +522,7 @@ class AppViewModel {
     }
 
     var daysUntilNextScan: Int {
-        guard let next = nextScanDate else { return 0 }
-        let days = Calendar.current.dateComponents([.day], from: Calendar.current.startOfDay(for: Date()), to: next).day ?? 0
-        return max(days, 0)
+        return 0
     }
 
     var photoDaysThisMonth: Set<Int> {
