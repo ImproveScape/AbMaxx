@@ -206,7 +206,7 @@ struct OnboardingFlowView: View {
             AllInOnePlaceView { goForward() }
 
         case .paywall:
-            PaywallView(store: store) {
+            Color.clear.onAppear {
                 viewModel.profile.isSubscribed = true
                 viewModel.profile.transformationStartDate = Date()
                 goForward()
