@@ -69,6 +69,13 @@ enum AppTheme {
         return destructive
     }
 
+    static func subscoreColor(for score: Int) -> Color {
+        if score >= 85 { return success }
+        if score >= 75 { return warning }
+        if score >= 65 { return primaryAccent }
+        return destructive
+    }
+
     static func glowShadow(radius: CGFloat = 20, opacity: Double = 0.35) -> Color {
         primaryAccent.opacity(opacity)
     }

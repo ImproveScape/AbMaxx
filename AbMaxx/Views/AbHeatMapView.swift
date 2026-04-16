@@ -218,6 +218,8 @@ struct AbHeatMapView: View {
                 return image
             }
         }()
+        let aspectImg = aiEditedImage ?? image
+        let aspectValue: CGFloat = aspectImg.size.width / aspectImg.size.height
 
         return GeometryReader { geo in
             let imageAspect = displayImage.size.width / displayImage.size.height
@@ -269,7 +271,7 @@ struct AbHeatMapView: View {
             }
             .frame(width: viewW, height: viewH)
         }
-        .aspectRatio((aiEditedImage ?? image).size.width / (aiEditedImage ?? image).size.height, contentMode: .fit)
+        .aspectRatio(aspectValue, contentMode: .fit)
         .overlay(alignment: .bottomLeading) {
             VStack(alignment: .leading, spacing: 6) {
                 Text("HEAT MAP ANALYSIS")
@@ -278,10 +280,10 @@ struct AbHeatMapView: View {
                     .tracking(1.5)
 
                 HStack(spacing: 12) {
-                    legendDot(color: AppTheme.subscoreColor(for: 85), label: "85+")
-                    legendDot(color: AppTheme.subscoreColor(for: 75), label: "75–84")
-                    legendDot(color: AppTheme.subscoreColor(for: 65), label: "65–74")
-                    legendDot(color: AppTheme.subscoreColor(for: 50), label: "<65")
+                    legendDot(color: AppTheme.scoreColor(for: 85), label: "85+")
+                    legendDot(color: AppTheme.scoreColor(for: 75), label: "75–84")
+                    legendDot(color: AppTheme.scoreColor(for: 65), label: "65–74")
+                    legendDot(color: AppTheme.scoreColor(for: 50), label: "<65")
                 }
             }
             .padding(16)
@@ -502,7 +504,7 @@ struct AbHeatMapView: View {
     }
 
     private func zoneScoreColor(_ score: Int) -> Color {
-        AppTheme.subscoreColor(for: score)
+        AppTheme.scoreColor(for: score)
     }
 
     // MARK: - Technical Notes
@@ -617,7 +619,7 @@ struct ZoneDetailSheet: View {
     let zone: HeatMapZone
 
     private var scoreColor: Color {
-        AppTheme.subscoreColor(for: zone.definitionScore)
+        AppTheme.scoreColor(for: zone.definitionScore)
     }
 
     private var gradeLabel: String {

@@ -8,7 +8,7 @@ struct HeatMapOverlayView: View {
     var body: some View {
         Canvas { context, size in
             for zone in zones {
-                let color = AppTheme.subscoreColor(for: zone.definitionScore)
+                let color = AppTheme.scoreColor(for: zone.definitionScore)
                 let opacity = appeared ? 0.7 : 0.0
 
                 let path = musclePath(for: zone, in: size)
@@ -280,6 +280,6 @@ struct HeatMapOverlayView: View {
     }
 
     private func heatColor(for score: Int) -> Color {
-        AppTheme.subscoreColor(for: score)
+        AppTheme.scoreColor(for: score)
     }
 }
